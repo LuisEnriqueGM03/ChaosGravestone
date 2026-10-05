@@ -1,0 +1,70 @@
+{
+	"parent": "minecraft:block/block",
+	"__comment": "Geometría común; cada variante (models/block/<id>.json, generado) pone sus texturas.",
+	"texture_size": [32, 32],
+	"elements": [
+		{
+			"__comment": "Base inferior de ladrillo",
+			"from": [1, 0, 4], "to": [15, 2, 15],
+			"faces": {
+				"north": { "uv": [1, 0, 15, 2], "texture": "#base" },
+				"south": { "uv": [1, 0, 15, 2], "texture": "#base" },
+				"east": { "uv": [1, 0, 12, 2], "texture": "#base" },
+				"west": { "uv": [1, 0, 12, 2], "texture": "#base" },
+				"up": { "uv": [1, 4, 15, 15], "texture": "#base_top" },
+				"down": { "uv": [1, 4, 15, 15], "texture": "#base", "cullface": "down" }
+			}
+		},
+		{
+			"__comment": "Base superior",
+			"from": [2, 2, 5.5], "to": [14, 3, 13.5],
+			"faces": {
+				"north": { "uv": [2, 0, 14, 1], "texture": "#base" },
+				"south": { "uv": [2, 0, 14, 1], "texture": "#base" },
+				"east": { "uv": [2, 0, 10, 1], "texture": "#base" },
+				"west": { "uv": [2, 0, 10, 1], "texture": "#base" },
+				"up": { "uv": [2, 5, 14, 13], "texture": "#base_top" }
+			}
+		},
+		{
+			"__comment": "Losa; la cara norte es el frente con marco, placa y calavera",
+			"from": [2, 3, 8], "to": [14, 15, 12],
+			"faces": {
+				"north": { "uv": [2, 1, 14, 13], "texture": "#front" },
+				"south": { "uv": [2, 1, 14, 13], "texture": "#side" },
+				"east": { "uv": [4, 1, 8, 13], "texture": "#side" },
+				"west": { "uv": [8, 1, 12, 13], "texture": "#side" },
+				"up": { "uv": [2, 8, 14, 12], "texture": "#top" }
+			}
+		},
+		{
+			"__comment": "Remate, primer escalón",
+			"from": [3, 15, 8], "to": [13, 16, 12],
+			"faces": {
+				"north": { "uv": [3, 0, 13, 1], "texture": "#side" },
+				"south": { "uv": [3, 0, 13, 1], "texture": "#side" },
+				"east": { "uv": [4, 0, 8, 1], "texture": "#side" },
+				"west": { "uv": [8, 0, 12, 1], "texture": "#side" },
+				"up": { "uv": [3, 8, 13, 12], "texture": "#top" }
+			}
+		},
+		{
+			"__comment": "Remate, segundo escalón (sobresale del bloque)",
+			"from": [5, 16, 8], "to": [11, 17, 12],
+			"faces": {
+				"north": { "uv": [5, 1, 11, 2], "texture": "#side" },
+				"south": { "uv": [5, 1, 11, 2], "texture": "#side" },
+				"east": { "uv": [4, 1, 8, 2], "texture": "#side" },
+				"west": { "uv": [8, 1, 12, 2], "texture": "#side" },
+				"up": { "uv": [5, 8, 11, 12], "texture": "#top" }
+			}
+		}
+	],
+	"display": {
+		"gui": { "rotation": [30, 225, 0], "translation": [0, -1, 0], "scale": [0.6, 0.6, 0.6] },
+		"ground": { "translation": [0, 3, 0], "scale": [0.25, 0.25, 0.25] },
+		"fixed": { "rotation": [0, 180, 0], "scale": [0.5, 0.5, 0.5] },
+		"thirdperson_righthand": { "rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.375, 0.375, 0.375] },
+		"firstperson_righthand": { "rotation": [0, 45, 0], "scale": [0.4, 0.4, 0.4] }
+	}
+}

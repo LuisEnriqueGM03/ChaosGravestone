@@ -1,0 +1,11 @@
+{
+	"parent": "chaosgravestone:block/gravestone_template",
+	"textures": {
+		"front": "chaosgravestone:block/crimson_gravestone_front",
+		"side": "chaosgravestone:block/crimson_gravestone_side",
+		"top": "chaosgravestone:block/crimson_gravestone_top",
+		"base": "chaosgravestone:block/crimson_gravestone_base",
+		"base_top": "chaosgravestone:block/crimson_gravestone_base_top",
+		"particle": "chaosgravestone:block/crimson_gravestone_side"
+	}
+}

@@ -1,0 +1,12 @@
+{
+	"required": true,
+	"package": "com.chaos.gravestone.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"CreativeModeTabMixin",
+		"ServerPlayerMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}

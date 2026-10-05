@@ -1,0 +1,11 @@
+{
+	"parent": "chaosgravestone:block/gravestone_template",
+	"textures": {
+		"front": "chaosgravestone:block/end_gravestone_front",
+		"side": "chaosgravestone:block/end_gravestone_side",
+		"top": "chaosgravestone:block/end_gravestone_top",
+		"base": "chaosgravestone:block/end_gravestone_base",
+		"base_top": "chaosgravestone:block/end_gravestone_base_top",
+		"particle": "chaosgravestone:block/end_gravestone_side"
+	}
+}

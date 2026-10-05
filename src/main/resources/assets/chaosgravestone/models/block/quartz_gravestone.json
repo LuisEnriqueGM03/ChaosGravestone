@@ -1,0 +1,11 @@
+{
+	"parent": "chaosgravestone:block/gravestone_template",
+	"textures": {
+		"front": "chaosgravestone:block/quartz_gravestone_front",
+		"side": "chaosgravestone:block/quartz_gravestone_side",
+		"top": "chaosgravestone:block/quartz_gravestone_top",
+		"base": "chaosgravestone:block/quartz_gravestone_base",
+		"base_top": "chaosgravestone:block/quartz_gravestone_base_top",
+		"particle": "chaosgravestone:block/quartz_gravestone_side"
+	}
+}

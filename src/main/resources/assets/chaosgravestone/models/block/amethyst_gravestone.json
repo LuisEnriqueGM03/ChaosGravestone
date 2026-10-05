@@ -1,0 +1,11 @@
+{
+	"parent": "chaosgravestone:block/gravestone_template",
+	"textures": {
+		"front": "chaosgravestone:block/amethyst_gravestone_front",
+		"side": "chaosgravestone:block/amethyst_gravestone_side",
+		"top": "chaosgravestone:block/amethyst_gravestone_top",
+		"base": "chaosgravestone:block/amethyst_gravestone_base",
+		"base_top": "chaosgravestone:block/amethyst_gravestone_base_top",
+		"particle": "chaosgravestone:block/amethyst_gravestone_side"
+	}
+}

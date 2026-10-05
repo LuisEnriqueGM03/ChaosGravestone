@@ -1,0 +1,11 @@
+{
+	"parent": "chaosgravestone:block/gravestone_template",
+	"textures": {
+		"front": "chaosgravestone:block/mossy_gravestone_front",
+		"side": "chaosgravestone:block/mossy_gravestone_side",
+		"top": "chaosgravestone:block/mossy_gravestone_top",
+		"base": "chaosgravestone:block/mossy_gravestone_base",
+		"base_top": "chaosgravestone:block/mossy_gravestone_base_top",
+		"particle": "chaosgravestone:block/mossy_gravestone_side"
+	}
+}
