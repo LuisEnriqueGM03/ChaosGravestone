@@ -1,11 +1,12 @@
 # Sube los jars del mod a CurseForge (uno por cargador).
 # Token: variable de entorno CURSEFORGE_TOKEN (de la sesión o guardada con `setx`).
-# Uso:  powershell -File tools/upload-curseforge.ps1 [-Loader fabric|neoforge|both] [-DryRun]
+# Uso:  powershell -File tools/upload-curseforge.ps1 [-Loader fabric|neoforge|forge|all] [-DryRun]
+# Antes: ./gradlew build  y  ./gradlew -p forge build
 param(
 	[string]$ProjectId = "1728749",
 	[string]$ReleaseType = "release",
-	[ValidateSet("fabric", "neoforge", "both")]
-	[string]$Loader = "both",
+	[ValidateSet("fabric", "neoforge", "forge", "all")]
+	[string]$Loader = "all",
 	[switch]$DryRun
 )
 $ErrorActionPreference = "Stop"
@@ -23,8 +24,9 @@ $all = Invoke-RestMethod -Uri "$api/game/versions" -Headers @{ "X-Api-Token" = $
 $loaders = @{
 	fabric   = @{ GameVersion = "Fabric"; Relations = @(@{ slug = "fabric-api"; type = "requiredDependency" }) }
 	neoforge = @{ GameVersion = "NeoForge"; Relations = @() }
+	forge    = @{ GameVersion = "Forge"; Relations = @() }
 }
-$selected = if ($Loader -eq "both") { "fabric", "neoforge" } else { , $Loader }
+$selected = if ($Loader -eq "all") { "fabric", "neoforge", "forge" } else { , $Loader }
 
 $failed = $false
 foreach ($name in $selected) {

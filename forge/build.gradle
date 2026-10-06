@@ -1,0 +1,83 @@
+plugins {
+	id 'java'
+	id 'net.minecraftforge.gradle' version '[7.0.3,8)'
+}
+
+// Mismos datos del mod que fabric/neoforge (una sola fuente: ../gradle.properties).
+def mod = new Properties()
+file('../gradle.properties').withInputStream { mod.load(it) }
+
+version = mod.version
+group = mod.group
+base.archivesName = "${mod.mod_id}-forge"
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(mod.java_version as int)
+
+// Código y recursos compartidos: los mismos de :common.
+sourceSets.main {
+	java.srcDir '../common/src/main/java'
+	resources.srcDir '../common/src/main/resources'
+}
+
+minecraft {
+	mappings channel: 'official', version: mod.minecraft_version
+	runs {
+		configureEach {
+			workingDir = layout.projectDirectory.dir('run')
+			args '--mixin.config', "${mod.mod_id}.mixins.json"
+		}
+		register('client') {
+			// Autoprueba visual: ./gradlew -p forge runClient -Pselftest (necesita forge/run/saves/selftest).
+			if (project.hasProperty('selftest')) {
+				systemProperty 'chaosgravestone.selftest', 'true'
+				args '--quickPlaySingleplayer', 'selftest'
+			}
+		}
+		register('server') {
+			args '--nogui'
+		}
+	}
+}
+
+repositories {
+	minecraft.mavenizer(it)
+	maven fg.forgeMaven
+	maven fg.minecraftLibsMaven
+	mavenCentral()
+}
+
+dependencies {
+	implementation minecraft.dependency("net.minecraftforge:forge:${mod.minecraft_version}-${forge_version}")
+	compileOnly 'org.jetbrains:annotations:24.1.0'
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release = mod.java_version as int
+}
+
+processResources {
+	def props = [
+			version                   : version,
+			mod_id                    : mod.mod_id,
+			mod_name                  : mod.mod_name,
+			mod_author                : mod.mod_author,
+			license                   : mod.license,
+			minecraft_version_range   : mod.minecraft_version_range,
+			forge_loader_version_range: forge_loader_version_range,
+	]
+	inputs.properties(props)
+	filesMatching('META-INF/mods.toml') {
+		expand props
+	}
+}
+
+jar {
+	from(rootProject.file('../LICENSE')) {
+		rename { "${it}_${mod.mod_id}" }
+	}
+	manifest {
+		// Forge carga los mixins declarados aquí.
+		attributes('MixinConfigs': "${mod.mod_id}.mixins.json")
+	}
+}

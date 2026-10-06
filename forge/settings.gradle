@@ -1,0 +1,19 @@
+// Build aparte para Forge: no forma parte del build de fabric/neoforge (ver settings.gradle de la raíz),
+// para que actualizar uno no obligue a tocar el otro. Se ejecuta con el wrapper de la raíz:
+//   ./gradlew -p forge build
+pluginManagement {
+	repositories {
+		gradlePluginPortal()
+		maven {
+			name = 'MinecraftForge'
+			url = 'https://maven.minecraftforge.net/'
+		}
+	}
+}
+
+// Como en el MDK oficial: el lanzador de ForgeGradle pide un JDK 8 y foojay lo descarga si falta.
+plugins {
+	id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+rootProject.name = 'chaosgravestone-forge'

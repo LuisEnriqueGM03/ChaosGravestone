@@ -1,6 +1,6 @@
 # Chaos Gravestone
 
-Mod de lápidas para **Minecraft 1.21.1**, para **Fabric** y **NeoForge**. Al morir queda una lápida protegida con todo tu inventario; al abrirla, cada objeto vuelve a su ranura.
+Mod de lápidas para **Minecraft 1.21.1**, para **Fabric**, **NeoForge** y **Forge**. Al morir queda una lápida protegida con todo tu inventario; al abrirla, cada objeto vuelve a su ranura.
 
 - Lápida solo para su dueño (configurable); si la rompe, todo cae al suelo.
 - 18 estilos que se eligen según bioma, profundidad y dimensión, con nombre, fecha, hora y causa de la muerte grabados.
@@ -20,8 +20,11 @@ Basada en [MultiLoader-Template](https://github.com/jaredlll08/MultiLoader-Templ
 | `common` | Casi todo el mod (lápidas, brújulas, partículas, renderer, recursos). Compila contra Minecraft vanilla. |
 | `fabric` | Arranque, eventos y red con Fabric API. |
 | `neoforge` | Arranque, `RegisterEvent`, eventos y red con NeoForge. |
+| `forge` | Arranque, `RegisterEvent`, eventos y red con Forge. **Build aparte** (ForgeGradle), que usa el código y los recursos de `common`. |
 
 Lo que depende del cargador pasa por `common/.../platform/Platform` (una implementación por cargador, vía `ServiceLoader`).
+
+Forge va en un build separado para que actualizar Fabric/NeoForge (o Forge) nunca obligue a tocar el otro.
 
 ## Compilar
 
@@ -33,6 +36,10 @@ Necesita JDK 25 para ejecutar Gradle (lo exige Fabric Loom) y JDK 21 instalado (
 ./gradlew :neoforge:runClient        # cliente de desarrollo NeoForge (neoforge/run/)
 ./gradlew :fabric:runSelftest        # autoprueba visual (capturas en run/screenshots)
 ./gradlew :neoforge:runSelftest      # autoprueba visual (capturas en neoforge/run/screenshots)
+
+./gradlew -p forge build             # forge/build/libs
+./gradlew -p forge runClient         # cliente de desarrollo Forge (forge/run/)
+./gradlew -p forge runClient -Pselftest   # autoprueba visual (capturas en forge/run/screenshots)
 ```
 
 ## Texturas
