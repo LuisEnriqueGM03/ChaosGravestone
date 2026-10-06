@@ -1,0 +1,30 @@
+plugins {
+	id 'multiloader-loader'
+	id 'net.neoforged.moddev'
+}
+
+neoForge {
+	version = neoforge_version
+	runs {
+		client {
+			client()
+			gameDirectory = file('run')
+		}
+		server {
+			server()
+			gameDirectory = file('run')
+		}
+		// Autoprueba visual: ./gradlew :neoforge:runSelftest (necesita neoforge/run/saves/selftest).
+		selftest {
+			client()
+			gameDirectory = file('run')
+			programArguments.addAll('--quickPlaySingleplayer', 'selftest')
+			systemProperty('chaosgravestone.selftest', 'true')
+		}
+	}
+	mods {
+		"${mod_id}" {
+			sourceSet sourceSets.main
+		}
+	}
+}

@@ -18,7 +18,7 @@ import javax.imageio.ImageIO;
  */
 public class TextureGen {
 
-	static final String ASSETS = "src/main/resources/assets/chaosgravestone/";
+	static final String ASSETS = "common/src/main/resources/assets/chaosgravestone/";
 	static final String BLOCK_TEX = ASSETS + "textures/block/";
 	static final int S = 32;
 

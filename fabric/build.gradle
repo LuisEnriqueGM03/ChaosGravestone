@@ -1,0 +1,34 @@
+plugins {
+	id 'multiloader-loader'
+	id 'net.fabricmc.fabric-loom-remap'
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+}
+
+loom {
+	mixin {
+		defaultRefmapName.set("${mod_id}.refmap.json")
+	}
+	runs {
+		// Mismo directorio de partida que antes del port (mundos, saves/selftest, capturas).
+		client {
+			runDir '../run'
+		}
+		server {
+			runDir '../run'
+		}
+		// Autoprueba visual: ./gradlew :fabric:runSelftest (necesita run/saves/selftest).
+		selftest {
+			client()
+			name "Self Test"
+			runDir '../run'
+			programArgs "--quickPlaySingleplayer", "selftest"
+			vmArg "-Dchaosgravestone.selftest=true"
+		}
+	}
+}

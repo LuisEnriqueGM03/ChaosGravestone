@@ -1,0 +1,60 @@
+// Ajustes comunes a los tres módulos (basado en MultiLoader-Template).
+plugins {
+	id 'java-library'
+}
+
+base {
+	archivesName = "${mod_id}-${project.name}"
+}
+
+java {
+	toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+	withSourcesJar()
+}
+
+repositories {
+	mavenCentral()
+	maven {
+		name = 'Sponge'
+		url = 'https://repo.spongepowered.org/repository/maven-public'
+		content { includeGroupAndSubgroups('org.spongepowered') }
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	options.encoding = 'UTF-8'
+	options.release = java_version as int
+}
+
+// Capacidad común para que fabric/neoforge puedan depender de :common sin arrastrar su Minecraft.
+['apiElements', 'runtimeElements', 'sourcesElements'].each { variant ->
+	configurations."$variant".outgoing {
+		capability("$group:${base.archivesName.get()}:$version")
+		capability("$group:$mod_id:$version")
+	}
+}
+
+jar {
+	from(rootProject.file('LICENSE')) {
+		rename { "${it}_${mod_id}" }
+	}
+}
+
+processResources {
+	def props = [
+			version                      : version,
+			mod_id                       : mod_id,
+			mod_name                     : mod_name,
+			mod_author                   : mod_author,
+			license                      : license,
+			minecraft_version            : minecraft_version,
+			minecraft_version_range      : minecraft_version_range,
+			loader_version               : loader_version,
+			neoforge_version             : neoforge_version,
+			neoforge_loader_version_range: neoforge_loader_version_range,
+	]
+	inputs.properties(props)
+	filesMatching(['fabric.mod.json', 'META-INF/neoforge.mods.toml']) {
+		expand props
+	}
+}

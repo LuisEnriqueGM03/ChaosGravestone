@@ -1,6 +1,6 @@
 # Chaos Gravestone
 
-Mod de lápidas para **Minecraft 1.21.1 (Fabric)**. Al morir queda una lápida protegida con todo tu inventario; al abrirla, cada objeto vuelve a su ranura.
+Mod de lápidas para **Minecraft 1.21.1**, para **Fabric** y **NeoForge**. Al morir queda una lápida protegida con todo tu inventario; al abrirla, cada objeto vuelve a su ranura.
 
 - Lápida solo para su dueño (configurable); si la rompe, todo cae al suelo.
 - 18 estilos que se eligen según bioma, profundidad y dimensión, con nombre, fecha, hora y causa de la muerte grabados.
@@ -9,16 +9,30 @@ Mod de lápidas para **Minecraft 1.21.1 (Fabric)**. Al morir queda una lápida p
 - Pestaña creativa "Lápidas" para decorar.
 - Español e inglés.
 
-Integración con Accessories, Trinkets, Travelers Backpack y Cosmetic Armor: pendiente.
+Integración con Accessories, Trinkets/Curios, Travelers Backpack y Cosmetic Armor: pendiente.
+
+## Estructura
+
+Basada en [MultiLoader-Template](https://github.com/jaredlll08/MultiLoader-Template):
+
+| Módulo | Contenido |
+|---|---|
+| `common` | Casi todo el mod (lápidas, brújulas, partículas, renderer, recursos). Compila contra Minecraft vanilla. |
+| `fabric` | Arranque, eventos y red con Fabric API. |
+| `neoforge` | Arranque, `RegisterEvent`, eventos y red con NeoForge. |
+
+Lo que depende del cargador pasa por `common/.../platform/Platform` (una implementación por cargador, vía `ServiceLoader`).
 
 ## Compilar
 
-Necesita JDK 25 (lo exige Fabric Loom).
+Necesita JDK 25 para ejecutar Gradle (lo exige Fabric Loom) y JDK 21 instalado (el mod se compila para Java 21).
 
 ```bash
-./gradlew build          # build/libs/chaosgravestone-<version>.jar
-./gradlew runClient      # cliente de desarrollo
-./gradlew runSelftest    # autoprueba visual: capturas en run/screenshots
+./gradlew build                      # fabric/build/libs y neoforge/build/libs
+./gradlew :fabric:runClient          # cliente de desarrollo Fabric (run/)
+./gradlew :neoforge:runClient        # cliente de desarrollo NeoForge (neoforge/run/)
+./gradlew :fabric:runSelftest        # autoprueba visual (capturas en run/screenshots)
+./gradlew :neoforge:runSelftest      # autoprueba visual (capturas en neoforge/run/screenshots)
 ```
 
 ## Texturas

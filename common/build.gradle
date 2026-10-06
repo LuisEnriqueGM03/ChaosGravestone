@@ -1,0 +1,32 @@
+// Código compartido: compila contra Minecraft vanilla (NeoForm, nombres de Mojang), sin ningún cargador.
+plugins {
+	id 'multiloader-common'
+	id 'net.neoforged.moddev'
+}
+
+neoForge {
+	neoFormVersion = neo_form_version
+	// Fuera de resources para que no viaje en los jars: solo hace falta al compilar aquí.
+	accessTransformers.from(file('accesstransformer.cfg'))
+}
+
+dependencies {
+	compileOnly 'org.spongepowered:mixin:0.8.5'
+	compileOnly 'org.jetbrains:annotations:24.1.0'
+}
+
+configurations {
+	commonJava {
+		canBeResolved = false
+		canBeConsumed = true
+	}
+	commonResources {
+		canBeResolved = false
+		canBeConsumed = true
+	}
+}
+
+artifacts {
+	commonJava sourceSets.main.java.sourceDirectories.singleFile
+	commonResources sourceSets.main.resources.sourceDirectories.singleFile
+}
