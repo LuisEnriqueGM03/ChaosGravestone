@@ -40,15 +40,17 @@ foreach ($name in $selected) {
 		$match.id
 	}
 
-	$metadata = @{
+	$meta = @{
 		# ReadAllText: en PowerShell 5.1, Get-Content -Raw añade propiedades que ConvertTo-Json serializa.
 		changelog     = [IO.File]::ReadAllText("$root\tools\changelog.md", [Text.Encoding]::UTF8)
 		changelogType = "markdown"
 		displayName   = "Chaos Gravestone - $version"
 		gameVersions  = @($ids)
 		releaseType   = $ReleaseType
-		relations     = @{ projects = @($cfg.Relations) }
-	} | ConvertTo-Json -Depth 5
+	}
+	# CurseForge rechaza relations.projects vacío: solo se envía si hay dependencias.
+	if ($cfg.Relations.Count -gt 0) { $meta.relations = @{ projects = @($cfg.Relations) } }
+	$metadata = $meta | ConvertTo-Json -Depth 5
 	$metaFile = Join-Path $env:TEMP "chaosgravestone-cf-metadata-$name.json"
 	[IO.File]::WriteAllText($metaFile, $metadata, (New-Object Text.UTF8Encoding $false))
 

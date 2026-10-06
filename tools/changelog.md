@@ -1,13 +1,8 @@
-## Chaos Gravestone 1.0.0
+## Chaos Gravestone 1.1.0
 
-Primera versión pública para Minecraft 1.21.1 (Fabric).
+- **Nuevo: versión para NeoForge 1.21.1**, con las mismas funciones que la de Fabric.
+- Sin cambios de jugabilidad respecto a la 1.0.0.
 
-- Al morir aparece una lápida con todo tu inventario; al abrirla cada objeto vuelve a su ranura (inventario, armadura, mano secundaria).
-- Lápida protegida: solo el dueño puede abrirla o romperla (si la rompe, todo cae al suelo).
-- 18 estilos de lápida que se eligen solos según el bioma, la profundidad y la dimensión, con nombre, fecha, hora y causa de la muerte grabados.
-- Brújula de lápida: al reaparecer recibes una brújula de calavera que apunta a tu tumba, con un rastro de calaveras y calaveras doradas sobre la lápida.
-- Brújula de lápida de ender (brújula + 4 perlas de ender): mantén clic derecho 5 s para teletransportarte a tu tumba.
-- Pestaña creativa "Lápidas" con todas las variantes para decorar.
-- Español e inglés.
+Incluye: lápida protegida con restauración de objetos a su ranura, 18 estilos según bioma y dimensión, brújula de lápida con rastro de calaveras y brújula de ender que teletransporta.
 
-Integración con Accessories, Trinkets, Travelers Backpack y Cosmetic Armor: próximamente.
+Integración con Accessories, Trinkets/Curios, Travelers Backpack y Cosmetic Armor: próximamente.
