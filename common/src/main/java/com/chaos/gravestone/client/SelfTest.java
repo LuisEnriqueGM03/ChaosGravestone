@@ -191,8 +191,8 @@ public final class SelfTest {
 				pearl, pearl, ItemStack.EMPTY,
 				pearl, compass, ItemStack.EMPTY,
 				ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY));
-		var recipe = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, good, level);
-		boolean badRejected = level.getRecipeManager().getRecipeFor(RecipeType.CRAFTING, bad, level).isEmpty();
+		var recipe = level.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, good, level);
+		boolean badRejected = level.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, bad, level).isEmpty();
 		ItemStack result = recipe.map(r -> r.value().assemble(good, level.registryAccess())).orElse(ItemStack.EMPTY);
 		boolean linked = result.is(ModBlocks.ENDER_GRAVE_COMPASS) && GravestoneCompass.read(result)
 				.filter(r -> r.id().equals(farGraveId)).isPresent();

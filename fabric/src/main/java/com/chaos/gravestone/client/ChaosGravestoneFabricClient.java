@@ -18,7 +18,6 @@ public class ChaosGravestoneFabricClient implements ClientModInitializer {
 		BlockEntityRenderers.register(ModBlocks.GRAVESTONE_ENTITY, GravestoneRenderer::new);
 		ParticleFactoryRegistry.getInstance().register(ModParticles.SKULL, SkullParticle.Provider::gray);
 		ParticleFactoryRegistry.getInstance().register(ModParticles.GOLD_SKULL, SkullParticle.Provider::gold);
-		ChaosGravestoneClient.registerItemProperties();
 		ClientPlayNetworking.registerGlobalReceiver(TotemSkullPayload.TYPE, (payload, context) ->
 				context.client().execute(ChaosGravestoneClient::showTotemSkull));
 

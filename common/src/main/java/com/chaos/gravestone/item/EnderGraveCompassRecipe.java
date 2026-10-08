@@ -51,12 +51,7 @@ public class EnderGraveCompassRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public boolean canCraftInDimensions(int width, int height) {
-		return width >= 3 && height >= 3;
-	}
-
-	@Override
-	public RecipeSerializer<?> getSerializer() {
+	public RecipeSerializer<? extends CustomRecipe> getSerializer() {
 		return ModBlocks.ENDER_GRAVE_COMPASS_RECIPE;
 	}
 }

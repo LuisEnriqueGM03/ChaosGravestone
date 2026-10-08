@@ -8,6 +8,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -23,14 +24,14 @@ public class ChaosGravestoneForge {
 		ChaosGravestone.init();
 		ForgeNetwork.register();
 
-		modBus.addListener(ChaosGravestoneForge::register);
+		modBus.addListener(EventPriority.NORMAL, false, RegisterEvent.class, ChaosGravestoneForge::register);
 
-		MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent event) -> {
+		MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, PlayerEvent.PlayerRespawnEvent.class, event -> {
 			if (event.getEntity() instanceof ServerPlayer player) {
 				GravestoneCompass.onRespawn(player);
 			}
 		});
-		MinecraftForge.EVENT_BUS.addListener((TickEvent.ServerTickEvent.Post event) ->
+		MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.ServerTickEvent.Post.class, event ->
 				GravestoneCompass.tick(event.getServer()));
 
 		if (FMLEnvironment.dist == Dist.CLIENT) {

@@ -103,7 +103,7 @@ public enum GravestoneVariant {
 			}
 			return lush ? MOSSY : DEEPSLATE;
 		}
-		if (biome.value().coldEnoughToSnow(pos)) {
+		if (biome.value().coldEnoughToSnow(pos, level.getSeaLevel())) {
 			return FROST;
 		}
 		if (biome.is(BiomeTags.IS_OCEAN) || biome.is(BiomeTags.IS_RIVER)) {

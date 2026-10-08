@@ -64,8 +64,8 @@ public final class GravestoneManager {
 	/** Hueco más cercano al punto de muerte: reemplazable y sin lava. */
 	@Nullable
 	private static BlockPos findSpot(ServerLevel level, BlockPos origin) {
-		int minY = level.getMinBuildHeight() + 1;
-		int maxY = level.getMaxBuildHeight() - 2;
+		int minY = level.getMinY() + 1;
+		int maxY = level.getMaxY() - 1;
 		BlockPos start = new BlockPos(origin.getX(), Math.max(minY, Math.min(origin.getY(), maxY)), origin.getZ());
 		BlockPos best = null;
 		double bestDist = Double.MAX_VALUE;

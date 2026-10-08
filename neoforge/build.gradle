@@ -8,16 +8,16 @@ neoForge {
 	runs {
 		client {
 			client()
-			gameDirectory = file('run')
+			gameDirectory = file("run-${minecraft_version}")
 		}
 		server {
 			server()
-			gameDirectory = file('run')
+			gameDirectory = file("run-${minecraft_version}")
 		}
 		// Autoprueba visual: ./gradlew :neoforge:runSelftest (necesita neoforge/run/saves/selftest).
 		selftest {
 			client()
-			gameDirectory = file('run')
+			gameDirectory = file("run-${minecraft_version}")
 			programArguments.addAll('--quickPlaySingleplayer', 'selftest')
 			systemProperty('chaosgravestone.selftest', 'true')
 		}

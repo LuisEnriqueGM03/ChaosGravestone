@@ -9,7 +9,7 @@ file('../gradle.properties').withInputStream { mod.load(it) }
 
 version = mod.version
 group = mod.group
-base.archivesName = "${mod.mod_id}-forge"
+base.archivesName = "${mod.mod_id}-forge-${mod.minecraft_version}"
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(mod.java_version as int)
 
@@ -23,7 +23,7 @@ minecraft {
 	mappings channel: 'official', version: mod.minecraft_version
 	runs {
 		configureEach {
-			workingDir = layout.projectDirectory.dir('run')
+			workingDir = layout.projectDirectory.dir("run-${mod.minecraft_version}")
 			args '--mixin.config', "${mod.mod_id}.mixins.json"
 		}
 		register('client') {

@@ -7,7 +7,6 @@ import net.minecraft.client.Minecraft;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
 
@@ -23,8 +22,6 @@ public final class ChaosGravestoneNeoForgeClient {
 			event.registerSpriteSet(ModParticles.SKULL, SkullParticle.Provider::gray);
 			event.registerSpriteSet(ModParticles.GOLD_SKULL, SkullParticle.Provider::gold);
 		});
-		modBus.addListener((FMLClientSetupEvent event) ->
-				event.enqueueWork(ChaosGravestoneClient::registerItemProperties));
 
 		if (SelfTest.enabled()) {
 			NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> SelfTest.tick(Minecraft.getInstance()));

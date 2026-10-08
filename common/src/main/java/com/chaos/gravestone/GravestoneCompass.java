@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import com.chaos.gravestone.block.GravestoneBlock;
@@ -134,7 +135,7 @@ public final class GravestoneCompass {
 				40, 0.4, 0.8, 0.4, 0.05);
 		from.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
 
-		player.teleportTo(level, dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5, yaw, 10.0F);
+		player.teleportTo(level, dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5, Set.of(), yaw, 10.0F, true);
 		player.resetFallDistance();
 
 		level.sendParticles(ParticleTypes.REVERSE_PORTAL, dest.getX() + 0.5, dest.getY() + 1, dest.getZ() + 0.5,
@@ -250,14 +251,14 @@ public final class GravestoneCompass {
 			double shift = (time % 36) / 36.0 * 2.5;
 			for (double d = 1.5 + shift; d <= Math.min(dist, TRAIL_LENGTH); d += 2.5) {
 				Vec3 p = from.add(dir.scale(d));
-				level.sendParticles(player, ModParticles.SKULL, false, p.x, p.y, p.z, 1, 0.08, 0.08, 0.08, 0);
+				level.sendParticles(player, ModParticles.SKULL, false, false, p.x, p.y, p.z, 1, 0.08, 0.08, 0.08, 0);
 			}
 		}
 		// Cerca de la lápida, de vez en cuando brota encima una calavera dorada (sube como mucho
 		// hasta 4 bloques sobre la base, ver SkullParticle).
 		if (dist < 48 && time % 16 == 0) {
 			BlockPos grave = ref.get().pos().pos();
-			level.sendParticles(player, ModParticles.GOLD_SKULL, false, grave.getX() + 0.5, grave.getY() + 1.05,
+			level.sendParticles(player, ModParticles.GOLD_SKULL, false, false, grave.getX() + 0.5, grave.getY() + 1.05,
 					grave.getZ() + 0.5, 1, 0.15, 0.0, 0.15, 0);
 		}
 	}

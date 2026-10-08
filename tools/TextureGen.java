@@ -190,6 +190,8 @@ public class TextureGen {
 					"parent": "chaosgravestone:block/%s"
 				}
 				""".formatted(id));
+		new File(ITEM_DEF).mkdirs();
+		itemDefinition(id, "chaosgravestone:item/" + id);
 		write(ASSETS + "blockstates/" + id + ".json", """
 				{
 					"variants": {
@@ -604,6 +606,8 @@ public class TextureGen {
 
 	static final String ITEM_TEX = ASSETS + "textures/item/";
 	static final String ITEM_MODEL = ASSETS + "models/item/";
+	/** Definiciones de ítem (1.21.4+): qué modelo usa cada ítem. */
+	static final String ITEM_DEF = ASSETS + "items/";
 	static final int FRAMES = 32;
 
 	/** Colores de una calavera: K contorno, B hueso, s sombra, E/x huecos, G brillo de los ojos. */
@@ -615,6 +619,7 @@ public class TextureGen {
 
 	static void compass() throws Exception {
 		new File(ITEM_TEX).mkdirs();
+		new File(ITEM_DEF).mkdirs();
 		// Normal: orbe verde. De ender: orbe y ojos morados (además, el ítem lleva brillo de encantado).
 		compass("grave_compass", BONE_SKULL, 0xD8FFB0, 0x7BE04A, 0x3F8A2A);
 		compass("ender_grave_compass", ENDER_SKULL, 0xF6E2FF, 0xB45CF0, 0x6A2A9E);
@@ -629,6 +634,7 @@ public class TextureGen {
 					"textures": { "layer0": "chaosgravestone:item/purple_skull" }
 				}
 				""");
+		itemDefinition("purple_skull", "chaosgravestone:item/purple_skull");
 	}
 
 	/**
@@ -652,23 +658,48 @@ public class TextureGen {
 					""".formatted(name, k));
 		}
 
-		// Mismo esquema de overrides que models/item/compass.json de vanilla.
-		StringBuilder overrides = new StringBuilder();
-		overrides.append(String.format("\t\t{ \"predicate\": { \"angle\": 0.000000 }, \"model\": \"chaosgravestone:item/%s_16\" },%n", name));
-		for (int i = 1; i < FRAMES; i++) {
-			overrides.append(String.format(Locale.ROOT,
-					"\t\t{ \"predicate\": { \"angle\": %.6f }, \"model\": \"chaosgravestone:item/%s_%02d\" },%n",
-					(2 * i - 1) / 64.0, name, (16 + i) % FRAMES));
-		}
-		overrides.append(String.format("\t\t{ \"predicate\": { \"angle\": 0.984375 }, \"model\": \"chaosgravestone:item/%s_16\" }%n", name));
 		write(ITEM_MODEL + name + ".json", """
 				{
 					"parent": "minecraft:item/generated",
-					"textures": { "layer0": "chaosgravestone:item/%s_16" },
-					"overrides": [
-				%s	]
+					"textures": { "layer0": "chaosgravestone:item/%s_16" }
 				}
-				""".formatted(name, overrides));
+				""".formatted(name));
+
+		// Definición de ítem (1.21.4+): igual que items/compass.json de vanilla, apuntando a la
+		// "piedra imán" del componente lodestone_tracker, que es la lápida. Sin destino gira sin control.
+		StringBuilder entries = new StringBuilder();
+		entries.append(entry(0.0, name, 16)).append(",\n");
+		for (int i = 1; i < FRAMES; i++) {
+			entries.append(entry(i - 0.5, name, (16 + i) % FRAMES)).append(",\n");
+		}
+		entries.append(entry(FRAMES - 0.5, name, 16)).append('\n');
+		write(ITEM_DEF + name + ".json", """
+				{
+					"model": {
+						"type": "minecraft:range_dispatch",
+						"property": "minecraft:compass",
+						"target": "lodestone",
+						"scale": 32.0,
+						"entries": [
+				%s			]
+					}
+				}
+				""".formatted(entries));
+	}
+
+	static String entry(double threshold, String name, int frame) {
+		return String.format(Locale.ROOT,
+				"\t\t\t\t{ \"threshold\": %.1f, \"model\": { \"type\": \"minecraft:model\", \"model\": \"chaosgravestone:item/%s_%02d\" } }",
+				threshold, name, frame);
+	}
+
+	/** Definición de ítem simple (1.21.4+): un único modelo. */
+	static void itemDefinition(String id, String model) throws Exception {
+		write(ITEM_DEF + id + ".json", """
+				{
+					"model": { "type": "minecraft:model", "model": "%s" }
+				}
+				""".formatted(model));
 	}
 
 	static void stampSkull(BufferedImage img, SkullPalette p) {

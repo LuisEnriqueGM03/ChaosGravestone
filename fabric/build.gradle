@@ -17,16 +17,16 @@ loom {
 	runs {
 		// Mismo directorio de partida que antes del port (mundos, saves/selftest, capturas).
 		client {
-			runDir '../run'
+			runDir "../run-${minecraft_version}"
 		}
 		server {
-			runDir '../run'
+			runDir "../run-${minecraft_version}"
 		}
 		// Autoprueba visual: ./gradlew :fabric:runSelftest (necesita run/saves/selftest).
 		selftest {
 			client()
 			name "Self Test"
-			runDir '../run'
+			runDir "../run-${minecraft_version}"
 			programArgs "--quickPlaySingleplayer", "selftest"
 			vmArg "-Dchaosgravestone.selftest=true"
 		}
