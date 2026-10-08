@@ -17,6 +17,7 @@ if (-not $token) { $token = [Environment]::GetEnvironmentVariable("CURSEFORGE_TO
 if (-not $token) { throw "Falta CURSEFORGE_TOKEN (setx CURSEFORGE_TOKEN <token>)" }
 
 $version = ((Get-Content "$root\gradle.properties") | Where-Object { $_ -match '^version=' }) -replace '^version=', ''
+$mcVersion = ((Get-Content "$rootgradle.properties") | Where-Object { $_ -match '^minecraft_version=' }) -replace '^minecraft_version=', ''
 $api = "https://minecraft.curseforge.com/api"
 $all = Invoke-RestMethod -Uri "$api/game/versions" -Headers @{ "X-Api-Token" = $token }
 
@@ -31,11 +32,11 @@ $selected = if ($Loader -eq "all") { "fabric", "neoforge", "forge" } else { , $L
 $failed = $false
 foreach ($name in $selected) {
 	$cfg = $loaders[$name]
-	$jar = Get-Item "$root\$name\build\libs\chaosgravestone-$name-$version.jar" -ErrorAction SilentlyContinue
-	if (-not $jar) { throw "No existe $name/build/libs/chaosgravestone-$name-$version.jar; ejecuta gradlew build" }
+	$jar = Get-Item "$root\$name\build\libs\chaosgravestone-$name-$mcVersion-$version.jar" -ErrorAction SilentlyContinue
+	if (-not $jar) { throw "No existe $name/build/libs/chaosgravestone-$name-$mcVersion-$version.jar; ejecuta gradlew build" }
 
 	# Ids de CurseForge para versión de juego, cargador, Java y entorno.
-	$ids = foreach ($wanted in "1.21.1", $cfg.GameVersion, "Java 21", "Client", "Server") {
+	$ids = foreach ($wanted in $mcVersion, $cfg.GameVersion, "Java 21", "Client", "Server") {
 		$match = $all | Where-Object { $_.name -eq $wanted } | Select-Object -First 1
 		if (-not $match) { throw "CurseForge no tiene la versión '$wanted'" }
 		Write-Host "  $wanted -> $($match.id)"
@@ -46,7 +47,7 @@ foreach ($name in $selected) {
 		# ReadAllText: en PowerShell 5.1, Get-Content -Raw añade propiedades que ConvertTo-Json serializa.
 		changelog     = [IO.File]::ReadAllText("$root\tools\changelog.md", [Text.Encoding]::UTF8)
 		changelogType = "markdown"
-		displayName   = "Chaos Gravestone - $version"
+		displayName   = "Chaos Gravestone - $version ($mcVersion)"
 		gameVersions  = @($ids)
 		releaseType   = $ReleaseType
 	}
