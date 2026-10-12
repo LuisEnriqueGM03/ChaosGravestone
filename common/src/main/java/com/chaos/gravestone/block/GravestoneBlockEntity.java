@@ -153,7 +153,7 @@ public class GravestoneBlockEntity extends BlockEntity {
 
 	private static void giveOrDrop(ServerPlayer player, ItemStack stack) {
 		if (!player.getInventory().add(stack) && !stack.isEmpty()) {
-			player.drop(stack, false);
+			player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
 		}
 	}
 

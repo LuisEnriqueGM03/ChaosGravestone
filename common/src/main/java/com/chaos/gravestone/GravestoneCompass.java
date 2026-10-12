@@ -62,7 +62,7 @@ public final class GravestoneCompass {
 
 	public static void give(ServerPlayer player, ItemStack stack) {
 		if (!player.getInventory().add(stack) && !stack.isEmpty()) {
-			player.drop(stack, false);
+			player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
 		}
 	}
 

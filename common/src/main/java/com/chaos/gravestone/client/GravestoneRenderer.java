@@ -79,7 +79,7 @@ public class GravestoneRenderer implements BlockEntityRenderer<GravestoneBlockEn
 
 		pose.pushPose();
 		pose.translate(0.5, 0, 0.5);
-		pose.mulPose(Axis.YP.rotationDegrees(-facing.toYRot()));
+		pose.rotateDegrees(Axis.YP, -facing.toYRot());
 		// La cara frontal del modelo está en el centro del bloque; un poco por delante para no parpadear.
 		pose.translate(0, TOP, 0.002);
 

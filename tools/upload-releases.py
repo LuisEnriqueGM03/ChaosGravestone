@@ -1,4 +1,4 @@
-"""Validate and publish the three Minecraft 26.2 releases. Token stays in the process environment."""
+"""Validate and publish the three Minecraft 26.3 releases. Token stays in the process environment."""
 from pathlib import Path
 import hashlib
 import json
@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PROJECT = 1728749
 API = 'https://minecraft.curseforge.com/api'
 TOKEN = os.environ.get('CURSEFORGE_TOKEN', '')
-RECORD = ROOT / 'release-records-26.2.json'
+RECORD = ROOT / 'release-records-26.3.json'
 
 
 def request(path, data=None, content_type=None):
@@ -36,7 +36,7 @@ def main():
     props = dict(line.split('=', 1) for line in (ROOT / 'gradle.properties').read_text(encoding='utf-8').splitlines()
                  if '=' in line and not line.startswith('#'))
     mc, version = props['minecraft_version'], props['version']
-    assert mc == '26.2'
+    assert mc == '26.3'
     artifacts = []
     for loader in ('fabric', 'neoforge', 'forge'):
         path = ROOT / loader / 'build/libs' / f'chaosgravestone-{loader}-{mc}-{version}.jar'
@@ -44,7 +44,7 @@ def main():
         digest = hashlib.sha256(contents).hexdigest()
         with zipfile.ZipFile(path) as jar:
             assert jar.read('com/chaos/gravestone/ChaosGravestone.class')[6:8] == bytes([0, 69]), 'Java 25 target required'
-            assert json.loads(jar.read('pack.mcmeta'))['pack']['min_format'] == [88, 0]
+            assert json.loads(jar.read('pack.mcmeta'))['pack']['min_format'] == [97, 1]
             assert 'data/chaosgravestone/recipe/ender_grave_compass.json' in jar.namelist()
             assert 'META-INF/services/com.chaos.gravestone.platform.Platform' in jar.namelist()
             assert json.loads(jar.read('chaosgravestone.mixins.json'))['compatibilityLevel'] == ('JAVA_21' if loader == 'forge' else 'JAVA_25')
@@ -55,14 +55,14 @@ def main():
             if loader == 'fabric':
                 metadata = json.loads(jar.read('fabric.mod.json'))
                 assert metadata['version'] == version
-                assert metadata['depends']['minecraft'] == '26.2'
+                assert metadata['depends']['minecraft'] == '26.3'
                 assert metadata['authors'] == ['Goddark83']
             else:
                 metadata_path = 'META-INF/neoforge.mods.toml' if loader == 'neoforge' else 'META-INF/mods.toml'
                 descriptor = tomllib.loads(jar.read(metadata_path).decode())
                 dependencies = {d['modId']: d for d in descriptor['dependencies']['chaosgravestone']}
                 assert dependencies['minecraft']['versionRange'] == props['minecraft_version_range']
-                expected_range = '[26.2.0.90,26.3)' if loader == 'neoforge' else '[65.1.3,66)'
+                expected_range = '[26.3.0.76,26.4)' if loader == 'neoforge' else '[66.0.10,67)'
                 assert dependencies[loader]['versionRange'] == expected_range
                 metadata = descriptor['mods'][0]
                 assert metadata['version'] == version and metadata['modId'] == 'chaosgravestone'

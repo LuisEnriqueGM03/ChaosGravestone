@@ -3,7 +3,6 @@ package com.chaos.gravestone.block;
 import org.jetbrains.annotations.Nullable;
 
 import com.chaos.gravestone.GravestoneCompass;
-import com.mojang.serialization.MapCodec;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -30,7 +29,6 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class GravestoneBlock extends BaseEntityBlock {
 
-	public static final MapCodec<GravestoneBlock> CODEC = simpleCodec(GravestoneBlock::new);
 	public static final EnumProperty<Direction> FACING = BlockStateProperties.HORIZONTAL_FACING;
 	private static final float BREAK_HARDNESS = 1.5F;
 	// La forma del modelo mirando al norte, y sus rotaciones.
@@ -42,11 +40,6 @@ public class GravestoneBlock extends BaseEntityBlock {
 	public GravestoneBlock(Properties properties) {
 		super(properties);
 		registerDefaultState(stateDefinition.any().setValue(FACING, Direction.NORTH));
-	}
-
-	@Override
-	protected MapCodec<? extends BaseEntityBlock> codec() {
-		return CODEC;
 	}
 
 	@Override

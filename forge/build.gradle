@@ -23,7 +23,7 @@ repositories {
 }
 dependencies { implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}") }
 jar { manifest { attributes('MixinConfigs': "${mod_id}.mixins.json") } }
-// Forge 65 bundles Mixin 0.8.7, whose compatibility enum ends before JAVA_25.
+// Forge 66 bundles Mixin 0.8.7, whose compatibility enum ends before JAVA_25.
 // The mixins use Java 21 features; the mod and Minecraft still run with Java 25.
 processResources {
     inputs.property('mixinCompatibilityLevel', 'JAVA_21')

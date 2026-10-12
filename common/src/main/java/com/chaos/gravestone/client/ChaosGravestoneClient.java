@@ -16,6 +16,7 @@ public final class ChaosGravestoneClient {
 
 	/** Animación del tótem, pero con la calavera morada, al llegar a la lápida. */
 	public static void showTotemSkull() {
-		Minecraft.getInstance().gameRenderer.displayItemActivation(new ItemStack(ModBlocks.PURPLE_SKULL));
+		var player = Minecraft.getInstance().player;
+        if (player != null) player.displayItemActivation(new ItemStack(ModBlocks.PURPLE_SKULL));
 	}
 }
