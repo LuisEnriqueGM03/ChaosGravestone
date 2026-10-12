@@ -1,6 +1,1 @@
-{
-  "pack": {
-    "description": "Chaos Gravestone",
-    "pack_format": 15
-  }
-}
+{"pack":{"description":"Chaos Gravestone","min_format":[84,0],"max_format":[84,0]}}

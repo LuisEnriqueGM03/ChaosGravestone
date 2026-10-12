@@ -1,6 +1,6 @@
 package com.chaos.gravestone.platform;
 
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 /**
  * Registra un objeto en un registro concreto. Fabric lo hace directo con Registry.register;
@@ -9,5 +9,5 @@ import net.minecraft.resources.ResourceLocation;
 @FunctionalInterface
 public interface Registrar<T> {
 
-	void register(ResourceLocation id, T value);
+	void register(Identifier id, T value);
 }

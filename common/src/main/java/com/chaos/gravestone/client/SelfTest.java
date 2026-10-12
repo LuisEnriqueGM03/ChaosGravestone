@@ -17,6 +17,7 @@ import com.chaos.gravestone.platform.Services;
 import com.mojang.authlib.GameProfile;
 
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.server.level.ClientInformation;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -35,11 +36,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.world.inventory.TransientCraftingContainer;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -80,18 +77,23 @@ public final class SelfTest {
 
 	/** Al final de cada tick del cliente (evento de cada cargador). */
 	public static void tick(Minecraft mc) {
+        if (mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
+            mc.options.onboardAccessibility = false;
+            mc.options.save();
+            mc.setScreen(new net.minecraft.client.gui.screens.TitleScreen());
+        }
         if (!openingWorld && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
             openingWorld = true;
             String world = "selftest";
             if (new java.io.File(mc.gameDirectory, "saves/" + world + "/level.dat").isFile()) {
-                mc.createWorldOpenFlows().loadLevel(mc.screen, world);
+                mc.createWorldOpenFlows().openWorld(world, () -> mc.setScreen(new net.minecraft.client.gui.screens.TitleScreen()));
             } else {
                 mc.createWorldOpenFlows().createFreshLevel(world,
                     new net.minecraft.world.level.LevelSettings("Chaos Gravestone selftest", GameType.CREATIVE,
-                        false, net.minecraft.world.Difficulty.PEACEFUL, true,
-                        new net.minecraft.world.level.GameRules(), net.minecraft.world.level.WorldDataConfiguration.DEFAULT),
-                    new net.minecraft.world.level.levelgen.WorldOptions(1201L, false, false),
-                    net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions);
+                        new net.minecraft.world.level.LevelSettings.DifficultySettings(net.minecraft.world.Difficulty.PEACEFUL, false, false),
+                        true, net.minecraft.world.level.WorldDataConfiguration.DEFAULT),
+                    new net.minecraft.world.level.levelgen.WorldOptions(261L, false, false),
+                    net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.screen);
             }
         }
 		if (mc.player == null || mc.level == null || mc.getSingleplayerServer() == null) {
@@ -126,8 +128,8 @@ public final class SelfTest {
 			server.execute(() -> {
 				ServerPlayer p = server.getPlayerList().getPlayer(id);
 				var inv = p.getInventory();
-				ItemStack held = inv.getItem(inv.selected);
-				inv.setItem(inv.selected, inv.getItem(SPARE_SLOT));
+				ItemStack held = inv.getItem(inv.getSelectedSlot());
+				inv.setItem(inv.getSelectedSlot(), inv.getItem(SPARE_SLOT));
 				inv.setItem(SPARE_SLOT, held);
 			});
 		}
@@ -138,11 +140,11 @@ public final class SelfTest {
 			shot(mc, "variants_day");
 			// Descripción de la brújula que se lleva en la mano (coordenadas, dimensión y texto).
 			ItemStack held = mc.player.getMainHandItem();
-			for (Component line : held.getTooltipLines(mc.player,
+			for (Component line : held.getTooltipLines(Item.TooltipContext.of(mc.level), mc.player,
 					TooltipFlag.Default.NORMAL)) {
 				ChaosGravestone.LOGGER.info("[selftest] tooltip: {}", line.getString());
 			}
-			mc.getSingleplayerServer().execute(() -> mc.getSingleplayerServer().overworld().setDayTime(18000));
+			mc.getSingleplayerServer().execute(() -> setDayTime(mc.getSingleplayerServer().overworld(), 18000));
 		}
 		if (ticks == graveStart + 50) {
 			shot(mc, "variants_night");
@@ -196,32 +198,22 @@ public final class SelfTest {
 		}
 	}
 
-    private static CraftingContainer crafting(List<ItemStack> stacks) {
-        AbstractContainerMenu menu = new AbstractContainerMenu(MenuType.CRAFTING, 0) {
-            @Override public ItemStack quickMoveStack(Player player, int slot) { return ItemStack.EMPTY; }
-            @Override public boolean stillValid(Player player) { return true; }
-        };
-        CraftingContainer input = new TransientCraftingContainer(menu, 3, 3);
-        for (int i = 0; i < stacks.size(); i++) input.setItem(i, stacks.get(i));
-        return input;
-    }
-
 	private static void enderTest(ServerPlayer player) {
-		ServerLevel level = player.serverLevel();
+		ServerLevel level = player.level();
 		ItemStack pearl = new ItemStack(Items.ENDER_PEARL);
 		ItemStack compass = GravestoneCompass.create(
 				new GravestoneCompass.GraveRef(farGraveId, GlobalPos.of(level.dimension(), farPos)));
-		CraftingContainer good = crafting(List.of(
+		CraftingInput good = CraftingInput.of(3, 3, List.of(
 				ItemStack.EMPTY, pearl, ItemStack.EMPTY,
 				pearl, compass, pearl,
 				ItemStack.EMPTY, pearl, ItemStack.EMPTY));
-		CraftingContainer bad = crafting(List.of(
+		CraftingInput bad = CraftingInput.of(3, 3, List.of(
 				pearl, pearl, ItemStack.EMPTY,
 				pearl, compass, ItemStack.EMPTY,
 				ItemStack.EMPTY, ItemStack.EMPTY, ItemStack.EMPTY));
 		var recipe = level.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, good, level);
 		boolean badRejected = level.getServer().getRecipeManager().getRecipeFor(RecipeType.CRAFTING, bad, level).isEmpty();
-		ItemStack result = recipe.map(r -> r.assemble(good, level.registryAccess())).orElse(ItemStack.EMPTY);
+		ItemStack result = recipe.map(r -> r.value().assemble(good)).orElse(ItemStack.EMPTY);
 		boolean linked = result.is(ModBlocks.ENDER_GRAVE_COMPASS) && GravestoneCompass.read(result)
 				.filter(r -> r.id().equals(farGraveId)).isPresent();
 
@@ -240,7 +232,7 @@ public final class SelfTest {
 	}
 
 	private static void breakTest(ServerPlayer player) {
-		ServerLevel level = player.serverLevel();
+		ServerLevel level = player.level();
 		player.setGameMode(GameType.SURVIVAL);
 		// Restos de pruebas anteriores (tumbas sustituidas al aplanar) que falsearían el recuento.
 		level.getEntitiesOfClass(ItemEntity.class, new AABB(breakPos).inflate(4)).forEach(ItemEntity::discard);
@@ -248,7 +240,7 @@ public final class SelfTest {
 		float ownerProgress = state.getDestroyProgress(player, level, breakPos);
 		// Otro jugador cualquiera (no conectado): basta para calcular su progreso de picado.
 		ServerPlayer other = new ServerPlayer(level.getServer(), level,
-				new GameProfile(UUID.randomUUID(), "SelfTestOther"));
+				new GameProfile(UUID.randomUUID(), "SelfTestOther"), ClientInformation.createDefault());
 		float otherProgress = state.getDestroyProgress(other, level, breakPos);
 		int swordsBefore = player.getInventory().countItem(Items.DIAMOND_SWORD);
 		boolean broken = player.gameMode.destroyBlock(breakPos);
@@ -276,10 +268,10 @@ public final class SelfTest {
 			if (player == null) {
 				return;
 			}
-			ServerLevel level = player.serverLevel();
+			ServerLevel level = player.level();
             com.chaos.gravestone.GravestoneSelfTest.run(player);
-			level.setDayTime(6000);
-			level.setWeatherParameters(6000, 0, false, false);
+			setDayTime(level, 6000);
+			level.getServer().setWeatherParameters(6000, 0, false, false);
 
 			BlockPos feet = player.blockPosition();
 			BlockPos far = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, feet.north(30));
@@ -312,7 +304,7 @@ public final class SelfTest {
 			player.getInventory().setItem(SPARE_SLOT, GravestoneCompass.create(
 					new GravestoneCompass.GraveRef(breakGraveId, GlobalPos.of(level.dimension(), breakPos))));
 
-			player.getInventory().setItem(player.getInventory().selected,
+			player.getInventory().setItem(player.getInventory().getSelectedSlot(),
 					GravestoneCompass.create(new GravestoneCompass.GraveRef(farId, GlobalPos.of(level.dimension(), far))));
 			ChaosGravestone.LOGGER.info("[selftest] jugador en {}, lápida lejana en {}", feet, far);
 		});
@@ -330,6 +322,10 @@ public final class SelfTest {
 		return grave.getGraveId();
 	}
 
+    private static void setDayTime(ServerLevel level, long time) {
+        level.clockManager().setTotalTicks(level.registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.WORLD_CLOCK)
+            .getOrThrow(net.minecraft.world.clock.WorldClocks.OVERWORLD), time);
+    }
 
 	private static void look(Minecraft mc, float yaw, float pitch) {
 		mc.player.setYRot(yaw);
@@ -340,7 +336,7 @@ public final class SelfTest {
 	}
 
 	private static void shot(Minecraft mc, String name) {
-		Screenshot.grab(mc.gameDirectory, "selftest_" + name + ".png", mc.getMainRenderTarget(),
+		Screenshot.grab(mc.gameDirectory, "selftest_" + name + ".png", mc.getMainRenderTarget(), 1,
 				msg -> ChaosGravestone.LOGGER.info("[selftest] {}", msg.getString()));
 	}
 }

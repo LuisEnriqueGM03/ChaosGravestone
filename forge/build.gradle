@@ -1,28 +1,33 @@
 plugins {
     id 'multiloader-loader'
-    id 'net.neoforged.moddev.legacyforge'
+    id 'net.minecraftforge.gradle'
 }
-legacyForge {
-    enable { forgeVersion = "${minecraft_version}-${forge_version}" }
+minecraft {
     runs {
-        client { client(); gameDirectory = file("run-${minecraft_version}") }
-        server { server(); gameDirectory = file("run-${minecraft_version}"); programArgument '--nogui' }
-        gametest {
-            type = 'gameTestServer'
-            gameDirectory = file('run-gametest-1.20.1')
-            systemProperty 'forge.enabledGameTestNamespaces', 'chaosgravestone'
+        configureEach {
+            workingDir = layout.projectDirectory.dir("run-${minecraft_version}")
+            args '--mixin.config', "${mod_id}.mixins.json"
         }
-        selftest {
-            client()
-            gameDirectory = file("run-${minecraft_version}")
-            systemProperty 'chaosgravestone.selftest', 'true'
+        register('client') {
+            if (project.hasProperty('selftest')) systemProperty 'chaosgravestone.selftest', 'true'
         }
+        register('server') { args '--nogui' }
+
     }
-    mods { "${mod_id}" { sourceSet sourceSets.main } }
 }
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
 }
-dependencies { annotationProcessor 'org.spongepowered:mixin:0.8.5:processor' }
+dependencies { implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}") }
 jar { manifest { attributes('MixinConfigs': "${mod_id}.mixins.json") } }
+// Forge 62 bundles Mixin 0.8.7, whose compatibility enum ends before JAVA_25.
+// The mixins use Java 21 features; the mod and Minecraft still run with Java 25.
+processResources {
+    inputs.property('mixinCompatibilityLevel', 'JAVA_21')
+    filesMatching("${mod_id}.mixins.json") {
+        filter { line -> line.replace('JAVA_25', 'JAVA_21') }
+    }
+}

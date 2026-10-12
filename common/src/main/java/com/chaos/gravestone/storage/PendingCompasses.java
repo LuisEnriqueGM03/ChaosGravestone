@@ -1,65 +1,37 @@
 package com.chaos.gravestone.storage;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.Tag;
+import com.mojang.serialization.Codec;
+import net.minecraft.core.UUIDUtil;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.saveddata.SavedData;
-
-/** World-scoped delivery queue: survives restarts while a player is on the death screen. */
+import net.minecraft.world.level.saveddata.SavedDataType;
+/** World-scoped delivery including all item components, surviving server restarts. */
 public final class PendingCompasses extends SavedData {
-    private static final String NAME = "chaosgravestone_pending_compasses";
+    public static final Codec<PendingCompasses> CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, ItemStack.CODEC.listOf())
+        .fieldOf("pending").codec().xmap(PendingCompasses::new, data -> data.pending);
+    public static final SavedDataType<PendingCompasses> TYPE = new SavedDataType<>(
+        Identifier.fromNamespaceAndPath("chaosgravestone", "pending_compasses"), PendingCompasses::new, CODEC, null);
     private final Map<UUID, List<ItemStack>> pending = new HashMap<>();
-
-    public static PendingCompasses get(MinecraftServer server) {
-        return server.overworld().getDataStorage().computeIfAbsent(PendingCompasses::load, PendingCompasses::new, NAME);
+    public PendingCompasses() {}
+    private PendingCompasses(Map<UUID, List<ItemStack>> source) {
+        source.forEach((id, stacks) -> pending.put(id, new ArrayList<>(stacks)));
     }
-
-    public void add(UUID player, ItemStack stack) {
-        pending.computeIfAbsent(player, ignored -> new ArrayList<>()).add(stack.copy());
+    public static PendingCompasses get(MinecraftServer server) {
+        return server.overworld().getDataStorage().computeIfAbsent(TYPE);
+    }
+    public void add(UUID id, ItemStack stack) {
+        pending.computeIfAbsent(id, ignored -> new ArrayList<>()).add(stack.copy());
         setDirty();
     }
-
-    public List<ItemStack> take(UUID player) {
-        List<ItemStack> stacks = pending.remove(player);
+    public List<ItemStack> take(UUID id) {
+        List<ItemStack> stacks = pending.remove(id);
         if (stacks != null) setDirty();
         return stacks == null ? List.of() : stacks;
-    }
-
-    public static PendingCompasses load(CompoundTag tag) {
-        PendingCompasses data = new PendingCompasses();
-        for (Tag raw : tag.getList("players", Tag.TAG_COMPOUND)) {
-            CompoundTag entry = (CompoundTag) raw;
-            if (!entry.hasUUID("player")) continue;
-            List<ItemStack> stacks = new ArrayList<>();
-            for (Tag item : entry.getList("stacks", Tag.TAG_COMPOUND)) {
-                ItemStack stack = ItemStack.of((CompoundTag) item);
-                if (!stack.isEmpty()) stacks.add(stack);
-            }
-            data.pending.put(entry.getUUID("player"), stacks);
-        }
-        return data;
-    }
-
-    @Override
-    public CompoundTag save(CompoundTag tag) {
-        ListTag players = new ListTag();
-        pending.forEach((id, stacks) -> {
-            CompoundTag entry = new CompoundTag();
-            entry.putUUID("player", id);
-            ListTag items = new ListTag();
-            stacks.forEach(stack -> items.add(stack.save(new CompoundTag())));
-            entry.put("stacks", items);
-            players.add(entry);
-        });
-        tag.put("players", players);
-        return tag;
     }
 }

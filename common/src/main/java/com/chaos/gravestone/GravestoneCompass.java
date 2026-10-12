@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.chaos.gravestone.block.GravestoneBlock;
+import com.chaos.gravestone.network.TotemSkullPayload;
 
 import com.chaos.gravestone.platform.Services;
 
@@ -19,10 +20,7 @@ import net.minecraft.tags.FluidTags;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.core.GlobalPos;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import com.chaos.gravestone.block.GravestoneBlockEntity;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -31,6 +29,8 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.LodestoneTracker;
 import net.minecraft.world.phys.Vec3;
 
 /** Brújula que apunta a una lápida; guía con partículas cuando se lleva en la mano. */
@@ -47,17 +47,16 @@ public final class GravestoneCompass {
 
 	/** Al reaparecer: entrega las brújulas pendientes. Lo llama el evento de cada cargador. */
 	public static void onRespawn(ServerPlayer player) {
-		com.chaos.gravestone.storage.PendingCompasses.get(player.server).take(player.getUUID())
-            .forEach(stack -> give(player, stack));
+		List<ItemStack> stacks = com.chaos.gravestone.storage.PendingCompasses.get(player.level().getServer()).take(player.getUUID());
+		if (stacks != null) {
+			stacks.forEach(stack -> give(player, stack));
+		}
 	}
 
 	public static ItemStack create(GraveRef ref) {
 		ItemStack stack = new ItemStack(ModBlocks.GRAVE_COMPASS);
-		CompoundTag tag = stack.getOrCreateTag();
-        tag.putUUID(TAG, ref.id());
-        tag.put("LodestonePos", net.minecraft.nbt.NbtUtils.writeBlockPos(ref.pos().pos()));
-        tag.putString("LodestoneDimension", ref.pos().dimension().location().toString());
-        tag.putBoolean("LodestoneTracked", false);
+		stack.set(DataComponents.LODESTONE_TRACKER, new LodestoneTracker(Optional.of(ref.pos()), false));
+		CustomData.update(DataComponents.CUSTOM_DATA, stack, tag -> tag.store(TAG, net.minecraft.core.UUIDUtil.CODEC, ref.id()));
 		return stack;
 	}
 
@@ -74,7 +73,7 @@ public final class GravestoneCompass {
 
 	/** Brújula que llevaba el jugador al morir; se le devuelve igual al reaparecer. */
 	public static void addPending(ServerPlayer player, ItemStack stack) {
-		com.chaos.gravestone.storage.PendingCompasses.get(player.server).add(player.getUUID(), stack);
+		com.chaos.gravestone.storage.PendingCompasses.get(player.level().getServer()).add(player.getUUID(), stack);
 	}
 
 	/** Lee la lápida a la que apunta esta brújula (normal o de ender), si lo es. */
@@ -84,13 +83,16 @@ public final class GravestoneCompass {
 				&& !stack.is(Items.COMPASS)) {
 			return Optional.empty();
 		}
-        CompoundTag tag = stack.getTag();
-        if (tag == null || !tag.hasUUID(TAG) || !tag.contains("LodestonePos", 10)
-                || !tag.contains("LodestoneDimension", 8)) return Optional.empty();
-        ResourceLocation dim = ResourceLocation.tryParse(tag.getString("LodestoneDimension"));
-        if (dim == null) return Optional.empty();
-        return Optional.of(new GraveRef(tag.getUUID(TAG), GlobalPos.of(
-                ResourceKey.create(Registries.DIMENSION, dim), net.minecraft.nbt.NbtUtils.readBlockPos(tag.getCompound("LodestonePos")))));
+		CustomData data = stack.get(DataComponents.CUSTOM_DATA);
+		LodestoneTracker tracker = stack.get(DataComponents.LODESTONE_TRACKER);
+		if (data == null || tracker == null || tracker.target().isEmpty()) {
+			return Optional.empty();
+		}
+		CompoundTag tag = data.copyTag();
+		if (tag.read(TAG, net.minecraft.core.UUIDUtil.CODEC).isEmpty()) {
+			return Optional.empty();
+		}
+		return Optional.of(new GraveRef(tag.read(TAG, net.minecraft.core.UUIDUtil.CODEC).orElseThrow(), tracker.target().get()));
 	}
 
 	/** Quita del inventario todas las brújulas de esa lápida. */
@@ -108,17 +110,17 @@ public final class GravestoneCompass {
 	 * animación del tótem con calavera morada. {@code false} si la lápida ya no existe.
 	 */
 	public static boolean teleportToGrave(ServerPlayer player, GraveRef ref) {
-		ServerLevel level = player.server.getLevel(ref.pos().dimension());
+		ServerLevel level = player.level().getServer().getLevel(ref.pos().dimension());
 		BlockPos pos = ref.pos().pos();
 		if (level == null || !matchesGrave(level, pos, ref.id())) {
-			player.displayClientMessage(Component.translatable("message.chaosgravestone.grave_gone"), true);
+			player.sendOverlayMessage(Component.translatable("message.chaosgravestone.grave_gone"));
 			removeFrom(player, ref.id());
 			return false;
 		}
 		Direction facing = level.getBlockState(pos).getValue(GravestoneBlock.FACING);
 		BlockPos dest = findSafeSpot(level, pos, facing);
         if (dest == null) {
-            player.displayClientMessage(Component.translatable("message.chaosgravestone.no_safe_spot"), true);
+            player.sendOverlayMessage(Component.translatable("message.chaosgravestone.no_safe_spot"));
             return false;
         }
 		// Mirando hacia la lápida.
@@ -127,12 +129,12 @@ public final class GravestoneCompass {
 		float yaw = dx == 0 && dz == 0 ? facing.getOpposite().toYRot()
 				: (float) (Math.toDegrees(Math.atan2(dz, dx)) - 90.0);
 
-		ServerLevel from = player.serverLevel();
+		ServerLevel from = player.level();
 		from.sendParticles(ParticleTypes.REVERSE_PORTAL, player.getX(), player.getY() + 1, player.getZ(),
 				40, 0.4, 0.8, 0.4, 0.05);
 		from.playSound(null, player.blockPosition(), SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.0F, 1.0F);
 
-		player.teleportTo(level, dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5, Set.of(), yaw, 10.0F);
+		player.teleportTo(level, dest.getX() + 0.5, dest.getY(), dest.getZ() + 0.5, Set.of(), yaw, 10.0F, true);
 		player.resetFallDistance();
 
 		level.sendParticles(ParticleTypes.REVERSE_PORTAL, dest.getX() + 0.5, dest.getY() + 1, dest.getZ() + 0.5,
@@ -140,13 +142,13 @@ public final class GravestoneCompass {
 		level.sendParticles(ParticleTypes.WITCH, dest.getX() + 0.5, dest.getY() + 1, dest.getZ() + 0.5,
 				30, 0.6, 0.8, 0.6, 0.1);
 		level.playSound(null, dest, SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 0.8F, 1.2F);
-		Services.PLATFORM.sendTotemSkull(player);
+		Services.PLATFORM.sendToPlayer(player, new TotemSkullPayload());
 		return true;
 	}
 
 	/**
 	 * Dónde dejar al jugador: delante de la lápida si es seguro; si no, el sitio seguro más cercano
-	 * (radio 2), o encima de la lápida si allí también es seguro. Sin hueco seguro devuelve null.
+	 * (radio 2); y si no hay ninguno, de pie encima de la lápida.
 	 */
 	private static BlockPos findSafeSpot(ServerLevel level, BlockPos grave, Direction facing) {
 		BlockPos front = grave.relative(facing);
@@ -172,9 +174,7 @@ public final class GravestoneCompass {
 		BlockPos head = feet.above();
 		BlockPos below = feet.below();
 		BlockState floor = level.getBlockState(below);
-		return level.getWorldBorder().isWithinBounds(feet)
-                && !level.isOutsideBuildHeight(feet) && !level.isOutsideBuildHeight(head)
-                && level.getBlockState(feet).getCollisionShape(level, feet).isEmpty()
+		return level.getBlockState(feet).getCollisionShape(level, feet).isEmpty()
 				&& level.getBlockState(head).getCollisionShape(level, head).isEmpty()
 				&& level.getFluidState(feet).isEmpty()
 				&& level.getFluidState(head).isEmpty()
@@ -227,7 +227,7 @@ public final class GravestoneCompass {
 	}
 
     private static boolean matchesGrave(ServerLevel level, BlockPos pos, UUID id) {
-        return level.getBlockEntity(pos) instanceof GravestoneBlockEntity grave && id.equals(grave.getGraveId());
+        return level.getBlockEntity(pos) instanceof com.chaos.gravestone.block.GravestoneBlockEntity grave && id.equals(grave.getGraveId());
     }
 
 	private static void guide(ServerPlayer player, int time) {
@@ -238,7 +238,7 @@ public final class GravestoneCompass {
 		if (ref.isEmpty() || !ref.get().pos().dimension().equals(player.level().dimension())) {
 			return;
 		}
-		ServerLevel level = player.serverLevel();
+		ServerLevel level = player.level();
 		Vec3 target = Vec3.atCenterOf(ref.get().pos().pos());
 		Vec3 from = player.position().add(0, 1.0, 0);
 		Vec3 delta = target.subtract(from);
@@ -254,14 +254,14 @@ public final class GravestoneCompass {
 			double shift = (time % 36) / 36.0 * 2.5;
 			for (double d = 1.5 + shift; d <= Math.min(dist, TRAIL_LENGTH); d += 2.5) {
 				Vec3 p = from.add(dir.scale(d));
-				level.sendParticles(player, ModParticles.SKULL, false, p.x, p.y, p.z, 1, 0.08, 0.08, 0.08, 0);
+				level.sendParticles(player, ModParticles.SKULL, false, false, p.x, p.y, p.z, 1, 0.08, 0.08, 0.08, 0);
 			}
 		}
 		// Cerca de la lápida, de vez en cuando brota encima una calavera dorada (sube como mucho
 		// hasta 4 bloques sobre la base, ver SkullParticle).
 		if (dist < 48 && time % 16 == 0) {
 			BlockPos grave = ref.get().pos().pos();
-			level.sendParticles(player, ModParticles.GOLD_SKULL, false, grave.getX() + 0.5, grave.getY() + 1.05,
+			level.sendParticles(player, ModParticles.GOLD_SKULL, false, false, grave.getX() + 0.5, grave.getY() + 1.05,
 					grave.getZ() + 0.5, 1, 0.15, 0.0, 0.15, 0);
 		}
 	}

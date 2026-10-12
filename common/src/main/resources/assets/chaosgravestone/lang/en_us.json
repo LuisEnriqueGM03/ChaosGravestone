@@ -31,7 +31,7 @@
   "dimension.chaosgravestone.overworld": "Overworld",
   "dimension.chaosgravestone.the_nether": "Nether",
   "dimension.chaosgravestone.the_end": "End",
-  "text.chaosgravestone.footer": "Day %s Â· %s items",
+  "text.chaosgravestone.footer": "Day %s · %s items",
   "message.chaosgravestone.created": "Your gravestone is at %s, %s, %s (%s)",
   "message.chaosgravestone.not_yours": "This gravestone belongs to %s",
   "message.chaosgravestone.unlinked": "This compass is not linked to any gravestone",

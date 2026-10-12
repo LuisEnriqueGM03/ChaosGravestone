@@ -15,6 +15,7 @@ import com.chaos.gravestone.storage.SlotProvider;
 import com.chaos.gravestone.storage.StoredEntry;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -53,10 +54,10 @@ public class GravestoneBlockEntity extends BlockEntity {
 
 	public void init(ServerPlayer player, List<StoredEntry> contents, Component cause) {
 		this.owner = player.getUUID();
-		this.ownerName = player.getGameProfile().getName();
+		this.ownerName = player.getGameProfile().name();
 		this.deathTime = player.level().getGameTime();
 		this.deathMillis = System.currentTimeMillis();
-		this.deathDay = player.level().getDayTime() / 24000L + 1;
+		this.deathDay = player.level().getOverworldClockTime() / 24000L + 1;
 		this.deathCause = cause;
 		this.entries.clear();
 		this.entries.addAll(contents);
@@ -107,7 +108,7 @@ public class GravestoneBlockEntity extends BlockEntity {
 		if (!cfg.protectedByOwner || owner == null || owner.equals(player.getUUID())) {
 			return true;
 		}
-		if (cfg.opsCanOpen && player.hasPermissions(2)) {
+		if (cfg.opsCanOpen && player.permissions().hasPermission(net.minecraft.server.permissions.Permissions.COMMANDS_GAMEMASTER)) {
 			return true;
 		}
 		return cfg.unlockAfterMinutes > 0
@@ -139,7 +140,7 @@ public class GravestoneBlockEntity extends BlockEntity {
 
 	/** Suelta todo el contenido en el mundo (lápida rota o provider ausente). */
 	public void dropAll() {
-		if (level == null || level.isClientSide) {
+		if (level == null || level.isClientSide()) {
 			return;
 		}
 		for (StoredEntry entry : entries) {
@@ -156,67 +157,48 @@ public class GravestoneBlockEntity extends BlockEntity {
 		}
 	}
 
-	/** Datos que se graban en la lápida; los comparten el guardado y la sincronización. */
-	private void saveDisplay(CompoundTag tag) {
-		if (owner != null) {
-			tag.putUUID("owner", owner);
-		}
-		tag.putString("ownerName", ownerName);
-		tag.putLong("deathMillis", deathMillis);
-		tag.putLong("deathDay", deathDay);
-		tag.putInt("itemCount", itemCount);
-		if (deathCause != null) {
-			tag.putString("deathCause", Component.Serializer.toJson(deathCause));
-		}
-	}
 
-	@Override
-	protected void saveAdditional(CompoundTag tag) {
-		super.saveAdditional(tag);
-		saveDisplay(tag);
-		tag.putUUID("graveId", graveId);
-		tag.putLong("deathTime", deathTime);
-		ListTag list = new ListTag();
-		for (StoredEntry entry : entries) {
-			list.add(entry.save());
-		}
-		tag.put("entries", list);
-	}
-
-	@Override
-	public void load(CompoundTag tag) {
-		super.load(tag);
-		ownerName = tag.getString("ownerName");
-		deathMillis = tag.getLong("deathMillis");
-		deathDay = tag.getLong("deathDay");
-		deathCause = tag.contains("deathCause")
-				? Component.Serializer.fromJson(tag.getString("deathCause"))
-				: null;
-		if (tag.hasUUID("graveId")) {
-			graveId = tag.getUUID("graveId");
-		}
-		owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
-		deathTime = tag.getLong("deathTime");
-		entries.clear();
-		for (Tag t : tag.getList("entries", Tag.TAG_COMPOUND)) {
-			StoredEntry entry = StoredEntry.load((CompoundTag) t);
-			if (!entry.stack().isEmpty()) {
-				entries.add(entry);
-			}
-		}
-		itemCount = tag.contains("itemCount") ? tag.getInt("itemCount") : entries.size();
-	}
-
-	/** Al cliente solo le llegan los datos del grabado, nunca el inventario. */
-	@Override
-	public CompoundTag getUpdateTag() {
-		CompoundTag tag = new CompoundTag();
-		saveDisplay(tag);
-		return tag;
-	}
-
-	@Override
-	public Packet<ClientGamePacketListener> getUpdatePacket() {
-		return ClientboundBlockEntityDataPacket.create(this);
-	}
+    private void saveDisplay(net.minecraft.world.level.storage.ValueOutput output) {
+        output.storeNullable("owner", net.minecraft.core.UUIDUtil.CODEC, owner);
+        output.store("graveId", net.minecraft.core.UUIDUtil.CODEC, graveId);
+        output.putString("ownerName", ownerName);
+        output.putLong("deathMillis", deathMillis);
+        output.putLong("deathDay", deathDay);
+        output.putInt("itemCount", itemCount);
+        output.storeNullable("deathCause", net.minecraft.network.chat.ComponentSerialization.CODEC, deathCause);
+    }
+    @Override
+    protected void saveAdditional(net.minecraft.world.level.storage.ValueOutput output) {
+        super.saveAdditional(output);
+        saveDisplay(output);
+        output.putLong("deathTime", deathTime);
+        output.store("entries", StoredEntry.CODEC.listOf(), entries);
+    }
+    @Override
+    protected void loadAdditional(net.minecraft.world.level.storage.ValueInput input) {
+        super.loadAdditional(input);
+        owner = input.read("owner", net.minecraft.core.UUIDUtil.CODEC).orElse(null);
+        graveId = input.read("graveId", net.minecraft.core.UUIDUtil.CODEC).orElse(graveId);
+        ownerName = input.getStringOr("ownerName", "");
+        deathTime = input.getLongOr("deathTime", 0L);
+        deathMillis = input.getLongOr("deathMillis", 0L);
+        deathDay = input.getLongOr("deathDay", 0L);
+        deathCause = input.read("deathCause", net.minecraft.network.chat.ComponentSerialization.CODEC).orElse(null);
+        entries.clear();
+        input.read("entries", StoredEntry.CODEC.listOf()).ifPresent(entries::addAll);
+        itemCount = input.getIntOr("itemCount", entries.size());
+    }
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        var output = net.minecraft.world.level.storage.TagValueOutput.createWithContext(net.minecraft.util.ProblemReporter.DISCARDING, registries);
+        saveDisplay(output);
+        return output.buildResult();
+    }
+    @Override
+    public Packet<ClientGamePacketListener> getUpdatePacket() { return ClientboundBlockEntityDataPacket.create(this); }
+    @Override
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        dropAll();
+        super.preRemoveSideEffects(pos, state);
+    }
 }

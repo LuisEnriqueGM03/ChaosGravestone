@@ -17,7 +17,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.Containers;
-import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.block.state.BlockState;
 
 public final class GravestoneManager {
@@ -28,8 +28,8 @@ public final class GravestoneManager {
 
 	/** Llamado al inicio de {@code ServerPlayer#die}, antes de que se suelte ningún objeto. */
 	public static void onPlayerDeath(ServerPlayer player) {
-		ServerLevel level = player.serverLevel();
-		if (player.isSpectator() || level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
+		ServerLevel level = player.level();
+		if (player.isSpectator() || level.getGameRules().get(GameRules.KEEP_INVENTORY)) {
 			return;
 		}
 		// Se lee antes de vaciar nada: al inicio de die() el combat tracker aún tiene la causa.
@@ -59,15 +59,15 @@ public final class GravestoneManager {
 
 		if (GravestoneConfig.get().showCoordinates) {
 			player.sendSystemMessage(Component.translatable("message.chaosgravestone.created",
-					spot.getX(), spot.getY(), spot.getZ(), level.dimension().location().toString()));
+					spot.getX(), spot.getY(), spot.getZ(), level.dimension().identifier().toString()));
 		}
 	}
 
 	/** Hueco más cercano al punto de muerte: reemplazable y sin lava. */
 	@Nullable
 	private static BlockPos findSpot(ServerLevel level, BlockPos origin) {
-		int minY = level.getMinBuildHeight() + 1;
-		int maxY = level.getMaxBuildHeight() - 1;
+		int minY = level.getMinY() + 1;
+		int maxY = level.getMaxY() - 1;
 		BlockPos start = new BlockPos(origin.getX(), Math.max(minY, Math.min(origin.getY(), maxY)), origin.getZ());
 		BlockPos best = null;
 		double bestDist = Double.MAX_VALUE;

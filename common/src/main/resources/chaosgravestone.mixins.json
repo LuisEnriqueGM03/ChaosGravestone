@@ -2,13 +2,12 @@
   "required": true,
   "minVersion": "0.8",
   "package": "com.chaos.gravestone.mixin",
-  "compatibilityLevel": "JAVA_17",
+  "compatibilityLevel": "JAVA_25",
   "mixins": [
     "CreativeModeTabMixin",
     "ServerPlayerMixin"
   ],
   "injectors": {
     "defaultRequire": 1
-  },
-  "refmap": "chaosgravestone.refmap.json"
+  }
 }

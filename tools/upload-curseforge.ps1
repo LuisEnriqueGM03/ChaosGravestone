@@ -36,7 +36,7 @@ foreach ($name in $selected) {
 	if (-not $jar) { throw "No existe $name/build/libs/chaosgravestone-$name-$mcVersion-$version.jar; ejecuta gradlew build" }
 
 	# Ids de CurseForge para versiÃ³n de juego, cargador, Java y entorno.
-	$ids = foreach ($wanted in $mcVersion, $cfg.GameVersion, "Java 17", "Client", "Server") {
+	$ids = foreach ($wanted in $mcVersion, $cfg.GameVersion, "Java 25", "Client", "Server") {
 		$match = $all | Where-Object { $_.name -eq $wanted } | Select-Object -First 1
 		if (-not $match) { throw "CurseForge no tiene la versiÃ³n '$wanted'" }
 		Write-Host "  $wanted -> $($match.id)"

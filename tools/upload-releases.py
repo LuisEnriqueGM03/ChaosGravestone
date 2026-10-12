@@ -1,4 +1,4 @@
-"""Validate and publish the three Minecraft 1.20.1 releases. Token stays in the process environment."""
+"""Validate and publish the three Minecraft 26.1 releases. Token stays in the process environment."""
 from pathlib import Path
 import hashlib
 import json
@@ -14,7 +14,7 @@ ROOT = Path(__file__).resolve().parent.parent
 PROJECT = 1728749
 API = 'https://minecraft.curseforge.com/api'
 TOKEN = os.environ.get('CURSEFORGE_TOKEN', '')
-RECORD = ROOT / 'release-records-1.20.1.json'
+RECORD = ROOT / 'release-records-26.1.json'
 
 
 def request(path, data=None, content_type=None):
@@ -36,28 +36,30 @@ def main():
     props = dict(line.split('=', 1) for line in (ROOT / 'gradle.properties').read_text().splitlines()
                  if '=' in line and not line.startswith('#'))
     mc, version = props['minecraft_version'], props['version']
-    assert mc == '1.20.1'
+    assert mc == '26.1'
     artifacts = []
     for loader in ('fabric', 'neoforge', 'forge'):
         path = ROOT / loader / 'build/libs' / f'chaosgravestone-{loader}-{mc}-{version}.jar'
         contents = path.read_bytes()
         digest = hashlib.sha256(contents).hexdigest()
         with zipfile.ZipFile(path) as jar:
-            assert jar.read('com/chaos/gravestone/ChaosGravestone.class')[6:8] == bytes([0, 61]), 'Java 17 target required'
-            assert json.loads(jar.read('pack.mcmeta'))['pack']['pack_format'] == 15
-            assert 'data/chaosgravestone/recipes/ender_grave_compass.json' in jar.namelist()
+            assert jar.read('com/chaos/gravestone/ChaosGravestone.class')[6:8] == bytes([0, 69]), 'Java 25 target required'
+            assert json.loads(jar.read('pack.mcmeta'))['pack']['min_format'] == [84, 0]
+            assert 'data/chaosgravestone/recipe/ender_grave_compass.json' in jar.namelist()
             assert 'META-INF/services/com.chaos.gravestone.platform.Platform' in jar.namelist()
-            refmap = json.loads(jar.read('chaosgravestone.refmap.json'))
-            assert refmap['mappings'], 'Missing production mixin mappings'
+            assert json.loads(jar.read('chaosgravestone.mixins.json'))['compatibilityLevel'] == ('JAVA_21' if loader == 'forge' else 'JAVA_25')
             for name in ('grave_compass', 'ender_grave_compass'):
-                assert len(json.loads(jar.read(f'assets/chaosgravestone/models/item/{name}.json'))['overrides']) == 32
+                model = json.loads(jar.read(f'assets/chaosgravestone/items/{name}.json'))['model']
+                assert model['property'] == 'minecraft:compass' and model['target'] == 'lodestone'
+                assert len(model['entries']) == 33
             if loader == 'fabric':
                 metadata = json.loads(jar.read('fabric.mod.json'))
                 assert metadata['version'] == version
-                assert metadata['depends']['minecraft'] == '~1.20.1'
+                assert metadata['depends']['minecraft'] == '26.1'
                 assert metadata['authors'] == ['Goddark83']
             else:
-                metadata = tomllib.loads(jar.read('META-INF/mods.toml').decode())['mods'][0]
+                metadata_path = 'META-INF/neoforge.mods.toml' if loader == 'neoforge' else 'META-INF/mods.toml'
+                metadata = tomllib.loads(jar.read(metadata_path).decode())['mods'][0]
                 assert metadata['version'] == version and metadata['modId'] == 'chaosgravestone'
                 assert metadata['authors'] == 'Goddark83'
         artifacts.append((loader, path, contents, digest))
@@ -80,8 +82,8 @@ def main():
             'displayName': f'Chaos Gravestone {version} - {label} {mc}',
             'changelogType': 'markdown',
             'changelog': (ROOT / 'tools/changelog.md').read_text(encoding='utf-8'),
-            'gameVersions': [tag(mc), tag(label), tag('Java 17'), tag('Client'), tag('Server')],
-            'releaseType': 'release',
+            'gameVersions': [tag(mc), tag(label), tag('Java 25'), tag('Client'), tag('Server')],
+            'releaseType': 'beta' if loader == 'neoforge' else 'release',
         }
         if loader == 'fabric':
             metadata['relations'] = {'projects': [{'slug': 'fabric-api', 'type': 'requiredDependency'}]}

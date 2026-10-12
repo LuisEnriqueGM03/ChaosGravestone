@@ -1,28 +1,13 @@
 plugins {
     id 'multiloader-loader'
-    id 'net.neoforged.moddev.legacyforge'
+    id 'net.neoforged.moddev'
 }
-legacyForge {
-    enable { neoForgeVersion = "${minecraft_version}-${neoforge_version}" }
+neoForge {
+    version = neoforge_version
     runs {
         client { client(); gameDirectory = file("run-${minecraft_version}") }
         server { server(); gameDirectory = file("run-${minecraft_version}"); programArgument '--nogui' }
-        gametest {
-            type = 'gameTestServer'
-            gameDirectory = file('run-gametest-1.20.1')
-            systemProperty 'forge.enabledGameTestNamespaces', 'chaosgravestone'
-        }
-        selftest {
-            client()
-            gameDirectory = file("run-${minecraft_version}")
-            systemProperty 'chaosgravestone.selftest', 'true'
-        }
+        selftest { client(); gameDirectory = file("run-${minecraft_version}"); systemProperty 'chaosgravestone.selftest', 'true' }
     }
     mods { "${mod_id}" { sourceSet sourceSets.main } }
 }
-mixin {
-    add sourceSets.main, "${mod_id}.refmap.json"
-    config "${mod_id}.mixins.json"
-}
-dependencies { annotationProcessor 'org.spongepowered:mixin:0.8.5:processor' }
-jar { manifest { attributes('MixinConfigs': "${mod_id}.mixins.json") } }

@@ -11,6 +11,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 /** Inventario vanilla: 0-35 principal, 36-39 armadura, 40 mano secundaria. */
@@ -42,7 +43,7 @@ public final class VanillaProvider implements SlotProvider {
 				continue;
 			}
 			// Maldición de desaparición: el objeto se pierde, igual que en vanilla.
-			if (EnchantmentHelper.hasVanishingCurse(stack)) {
+			if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
 				continue;
 			}
 			out.add(new StoredEntry(ID, "slot#" + i, stack));

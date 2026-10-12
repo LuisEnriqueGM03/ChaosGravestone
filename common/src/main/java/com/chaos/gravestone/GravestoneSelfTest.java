@@ -14,35 +14,37 @@ public final class GravestoneSelfTest {
     private GravestoneSelfTest() {}
     /** Exercises the actual capture, save/load and restoration path in a disposable test world. */
     public static void run(ServerPlayer player) {
-        ServerLevel level = player.serverLevel();
+        ServerLevel level = player.level();
         BlockPos pos = player.blockPosition();
         level.setBlockAndUpdate(pos, Blocks.AIR.defaultBlockState());
         player.getInventory().clearContent();
         ItemStack named = new ItemStack(Items.DIAMOND_SWORD);
-        named.setHoverName(Component.literal("NBT preservation test"));
+        named.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal("Components preservation test"));
         player.getInventory().setItem(0, named.copy());
         player.getInventory().setItem(39, new ItemStack(Items.IRON_HELMET));
         player.getInventory().setItem(40, new ItemStack(Items.TORCH, 32));
 
-        level.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY).set(true, level.getServer());
+        level.getGameRules().set(net.minecraft.world.level.gamerules.GameRules.KEEP_INVENTORY, true, level.getServer());
         com.chaos.gravestone.GravestoneManager.onPlayerDeath(player);
         if (!ItemStack.matches(named, player.getInventory().getItem(0))) throw new IllegalStateException("keepInventory was ignored");
-        level.getGameRules().getRule(net.minecraft.world.level.GameRules.RULE_KEEPINVENTORY).set(false, level.getServer());
+        level.getGameRules().set(net.minecraft.world.level.gamerules.GameRules.KEEP_INVENTORY, false, level.getServer());
         com.chaos.gravestone.GravestoneManager.onPlayerDeath(player);
         if (!(level.getBlockEntity(pos) instanceof GravestoneBlockEntity grave)) throw new IllegalStateException("Death did not create grave");
         if (!player.getInventory().isEmpty() || grave.getItemCount() != 3) throw new IllegalStateException("Inventory capture failed");
         var ref = new GravestoneCompass.GraveRef(grave.getGraveId(), GlobalPos.of(level.dimension(), pos));
         ItemStack compass = GravestoneCompass.create(ref);
-        var pending = com.chaos.gravestone.storage.PendingCompasses.get(player.server);
-        var reloaded = com.chaos.gravestone.storage.PendingCompasses.load(pending.save(new net.minecraft.nbt.CompoundTag()));
+        var pending = com.chaos.gravestone.storage.PendingCompasses.get(player.level().getServer());
+        var ops = level.registryAccess().createSerializationContext(net.minecraft.nbt.NbtOps.INSTANCE);
+        var encoded = com.chaos.gravestone.storage.PendingCompasses.CODEC.encodeStart(ops, pending).getOrThrow();
+        var reloaded = com.chaos.gravestone.storage.PendingCompasses.CODEC.parse(ops, encoded).getOrThrow();
         if (reloaded.take(player.getUUID()).stream().noneMatch(stack -> ItemStack.matches(stack, compass)))
             throw new IllegalStateException("Pending compass persistence failed");
         GravestoneCompass.onRespawn(player);
         if (player.getInventory().countItem(ModBlocks.GRAVE_COMPASS) != 1) throw new IllegalStateException("Respawn compass delivery failed");
 
-        net.minecraft.nbt.CompoundTag saved = grave.saveWithFullMetadata();
-        if (grave.getUpdateTag().contains("entries")) throw new IllegalStateException("Inventory leaked to client");
-        grave.load(saved);
+        net.minecraft.nbt.CompoundTag saved = grave.saveWithFullMetadata(level.registryAccess());
+        if (grave.getUpdateTag(level.registryAccess()).contains("entries")) throw new IllegalStateException("Inventory leaked to client");
+        grave.loadWithComponents(net.minecraft.world.level.storage.TagValueInput.create(net.minecraft.util.ProblemReporter.DISCARDING, level.registryAccess(), saved));
         // Occupy every nearby destination and the block above the grave: teleport must fail safely.
         for (BlockPos p : BlockPos.betweenClosed(pos.offset(-2, -1, -2), pos.offset(2, 3, 2))) {
             if (!p.equals(pos)) level.setBlockAndUpdate(p, Blocks.STONE.defaultBlockState());

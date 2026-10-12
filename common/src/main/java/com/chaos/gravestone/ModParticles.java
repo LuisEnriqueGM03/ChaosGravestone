@@ -4,7 +4,7 @@ import com.chaos.gravestone.platform.Registrar;
 
 import net.minecraft.core.particles.ParticleType;
 import net.minecraft.core.particles.SimpleParticleType;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 public final class ModParticles {
 
@@ -16,8 +16,8 @@ public final class ModParticles {
 	private ModParticles() {}
 
 	public static void register(Registrar<ParticleType<?>> registrar) {
-		registrar.register(new ResourceLocation(ChaosGravestone.MOD_ID, "skull"), SKULL);
-		registrar.register(new ResourceLocation(ChaosGravestone.MOD_ID, "gold_skull"), GOLD_SKULL);
+		registrar.register(Identifier.fromNamespaceAndPath(ChaosGravestone.MOD_ID, "skull"), SKULL);
+		registrar.register(Identifier.fromNamespaceAndPath(ChaosGravestone.MOD_ID, "gold_skull"), GOLD_SKULL);
 	}
 
 	/** El constructor vanilla es protegido; una subclase anónima basta (es lo que hace Fabric por dentro). */

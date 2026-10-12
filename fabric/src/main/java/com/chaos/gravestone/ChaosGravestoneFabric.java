@@ -5,6 +5,7 @@ import com.chaos.gravestone.network.TotemSkullPayload;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -27,5 +28,6 @@ public class ChaosGravestoneFabric implements ModInitializer {
 
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> GravestoneCompass.onRespawn(newPlayer));
 		ServerTickEvents.END_SERVER_TICK.register(GravestoneCompass::tick);
+		PayloadTypeRegistry.clientboundPlay().register(TotemSkullPayload.TYPE, TotemSkullPayload.CODEC);
 	}
 }

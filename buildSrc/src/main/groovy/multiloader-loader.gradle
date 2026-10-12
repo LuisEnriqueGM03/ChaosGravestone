@@ -21,7 +21,7 @@ processResources {
     def props = [version: version, mod_id: mod_id, mod_name: mod_name, mod_author: mod_author,
                  license: license, minecraft_version_range: minecraft_version_range]
     inputs.properties(props)
-    filesMatching(['fabric.mod.json', 'META-INF/mods.toml']) { expand props }
+    filesMatching(['fabric.mod.json', 'META-INF/mods.toml', 'META-INF/neoforge.mods.toml']) { expand props }
 }
 jar {
     from(rootProject.file('LICENSE')) { rename { "${it}_${mod_id}" } }

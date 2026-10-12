@@ -1,32 +1,39 @@
-# Validación de Chaos Gravestone 1.1.0 para Minecraft 1.20.1
+# Validación de Chaos Gravestone 1.1.0 para Minecraft 26.1
 
-Autor del mod: **Goddark83**.
+Autor: **Goddark83**. Java **25**.
 
-Los tres JAR se compilan para Java 17. Fabric requiere Fabric API 0.92.12+1.20.1; los ports de NeoForge y Forge usan 47.1.106 y 47.4.26 respectivamente.
+## Cargadores
 
-## Comprobaciones realizadas
+- Fabric Loader 0.19.5 y Fabric API 0.145.1+26.1.
+- NeoForge 26.1.0.19-beta, publicado como beta por el estado del propio cargador.
+- Forge 62.0.9.
 
-- Compilación y empaquetado de Fabric, NeoForge y Forge.
-- Autoprueba en una partida desechable para cada cargador: captura del inventario, respeto de keepInventory, conservación del NBT, restauración a las ranuras originales y prevención de duplicados.
-- Serialización de las brújulas pendientes, validación del UUID de la tumba y rechazo del teletransporte a un lugar obstruido.
-- Rotura de la lápida por el dueño con contenido al suelo y eliminación de la brújula.
-- Receta de ender con conservación del vínculo, rechazo de un patrón incorrecto y teletransporte al destino seguro.
-- Capturas de las variantes, partículas y animación de llegada, sin errores de carga de modelos.
-- GameTest en los servidores de Forge y NeoForge: la prueba obligatoria de inventario y persistencia pasó en ambos.
-- Inspección de los JAR: autor, versión, Java 17, metadata, refmaps de producción, receta y modelos de brújula.
+Las ramas `fabric-26.1`, `neoforge-26.1` y `forge-26.1` seleccionan su cargador mediante `default_loader`. Los metadatos se limitan a Minecraft 26.1 exacta.
+
+## Pruebas
+
+Las autopruebas crean una partida desechable por cargador y comprueban:
+
+- Captura de inventario, armadura y mano secundaria; respeto de keepInventory.
+- Guardado y carga de los componentes de objetos y restauración a las ranuras originales sin duplicados.
+- Serialización de las brújulas pendientes de entrega.
+- Rechazo de un destino obstruido y de una tumba cuyo UUID no coincide.
+- Rotura por el dueño con contenido al suelo y eliminación de la brújula.
+- Receta de ender vinculada, rechazo de un patrón incorrecto y teletransporte a un destino seguro.
+- Capturas del texto de las lápidas, brújulas, variantes y partículas.
+
+Los JAR se inspeccionan para comprobar autor, versión, Java 25, metadata, receta, servicios de plataforma y definiciones de brújula. Al no estar ofuscado Minecraft 26.1, no requieren refmap de obfuscación.
 
 ## Alcance
 
-Las pruebas visuales usan un servidor integrado. Los GameTests usan un servidor de pruebas sin clientes. No se ha realizado una sesión multijugador con dos jugadores ni una prueba de inventarios de accesorios; esas integraciones siguen pendientes.
-
-En este equipo se desactivó la ventana de carga inicial de Forge y NeoForge en sus carpetas de prueba. Esa configuración no forma parte de los JAR publicados.
+Las pruebas de juego usan un servidor integrado. No se ha realizado una sesión multijugador con dos jugadores ni pruebas con inventarios de accesorios; esas integraciones siguen pendientes.
 
 ## Repetir
 
 ```bash
 ./gradlew -Ploader=all build
 ./gradlew -Ploader=fabric :fabric:runSelftest
-./gradlew -Ploader=forge :forge:runSelftest :forge:runGametest
-./gradlew -Ploader=neoforge :neoforge:runSelftest :neoforge:runGametest
+./gradlew -Ploader=neoforge :neoforge:runSelftest
+./gradlew -Ploader=forge :forge:runClient -Pselftest
 python tools/upload-releases.py --validate
 ```

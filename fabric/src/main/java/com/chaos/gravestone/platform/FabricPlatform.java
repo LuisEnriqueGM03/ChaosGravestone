@@ -4,11 +4,12 @@ import java.nio.file.Path;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
+import net.fabricmc.fabric.api.creativetab.v1.FabricCreativeModeTab;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
@@ -35,12 +36,12 @@ public class FabricPlatform implements Platform {
 
 	@Override
 	public CreativeModeTab.Builder creativeTabBuilder() {
-		return FabricItemGroup.builder();
+		return FabricCreativeModeTab.builder();
 	}
 
 	@Override
-	public void sendTotemSkull(ServerPlayer player) {
-		ServerPlayNetworking.send(player, com.chaos.gravestone.network.TotemSkullPayload.ID, net.fabricmc.fabric.api.networking.v1.PacketByteBufs.empty());
+	public void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
+		ServerPlayNetworking.send(player, payload);
 	}
 
 	@Override

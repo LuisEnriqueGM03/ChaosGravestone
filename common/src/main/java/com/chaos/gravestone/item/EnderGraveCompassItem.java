@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.UseAnim;
+import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 
 /**
@@ -38,57 +38,57 @@ public class EnderGraveCompassItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
 		GraveCompassItem.addGraveTooltip(stack, tooltip, "tooltip.chaosgravestone.ender_grave_compass");
 	}
 
 	@Override
-	public int getUseDuration(ItemStack stack) {
+	public int getUseDuration(ItemStack stack, LivingEntity entity) {
 		return CHARGE_TICKS;
 	}
 
 	@Override
-	public UseAnim getUseAnimation(ItemStack stack) {
-		return UseAnim.BOW;
+	public ItemUseAnimation getUseAnimation(ItemStack stack) {
+		return ItemUseAnimation.BOW;
 	}
 
 	@Override
-	public net.minecraft.world.InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+	public InteractionResult use(Level level, Player player, InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		if (GravestoneCompass.read(stack).isEmpty()) {
-			if (!level.isClientSide) {
-				player.displayClientMessage(Component.translatable("message.chaosgravestone.unlinked"), true);
+			if (!level.isClientSide()) {
+				player.sendOverlayMessage(Component.translatable("message.chaosgravestone.unlinked"));
 			}
-			return net.minecraft.world.InteractionResultHolder.fail(stack);
+			return InteractionResult.FAIL;
 		}
 		player.startUsingItem(hand);
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			level.playSound(null, player.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 0.3F, 1.4F);
 		}
-		return net.minecraft.world.InteractionResultHolder.consume(stack);
+		return InteractionResult.CONSUME;
 	}
 
 	/** Mientras carga, partículas de portal que se intensifican. */
 	@Override
 	public void onUseTick(Level level, LivingEntity entity, ItemStack stack, int remaining) {
-		if (!level.isClientSide) {
+		if (!level.isClientSide()) {
 			return;
 		}
 		int count = 1 + (CHARGE_TICKS - remaining) / 25;
 		for (int i = 0; i < count; i++) {
 			level.addParticle(ParticleTypes.PORTAL,
 					entity.getRandomX(0.8), entity.getRandomY(), entity.getRandomZ(0.8),
-					(level.random.nextDouble() - 0.5) * 2, -level.random.nextDouble(),
-					(level.random.nextDouble() - 0.5) * 2);
+					(level.getRandom().nextDouble() - 0.5) * 2, -level.getRandom().nextDouble(),
+					(level.getRandom().nextDouble() - 0.5) * 2);
 		}
 	}
 
 	@Override
 	public ItemStack finishUsingItem(ItemStack stack, Level level, LivingEntity entity) {
-		if (!level.isClientSide && entity instanceof ServerPlayer player) {
+		if (!level.isClientSide() && entity instanceof ServerPlayer player) {
 			GravestoneCompass.read(stack).ifPresent(ref -> {
 				if (GravestoneCompass.teleportToGrave(player, ref)) {
-					player.getCooldowns().addCooldown(stack.getItem(), COOLDOWN_TICKS);
+					player.getCooldowns().addCooldown(stack, COOLDOWN_TICKS);
 				}
 			});
 		}

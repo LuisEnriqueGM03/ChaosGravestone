@@ -7,9 +7,8 @@ import com.chaos.gravestone.GravestoneCompass;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 
@@ -21,24 +20,24 @@ public class GraveCompassItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, TooltipContext context, net.minecraft.world.item.component.TooltipDisplay display, java.util.function.Consumer<Component> tooltip, TooltipFlag flag) {
 		addGraveTooltip(stack, tooltip, "tooltip.chaosgravestone.grave_compass");
 	}
 
 	/** Coordenadas y dimensión de la tumba + descripción (claves de idioma {@code <prefix>.1}, {@code .2}). */
-	static void addGraveTooltip(ItemStack stack, List<Component> tooltip, String prefix) {
+	static void addGraveTooltip(ItemStack stack, java.util.function.Consumer<Component> tooltip, String prefix) {
 		GravestoneCompass.read(stack).ifPresentOrElse(ref -> {
 			BlockPos pos = ref.pos().pos();
-			ResourceLocation dim = ref.pos().dimension().location();
+			Identifier dim = ref.pos().dimension().identifier();
 			Component dimName = Component.translatableWithFallback(
 					"dimension.chaosgravestone." + dim.getPath(), dim.toString());
-			tooltip.add(Component.translatable("tooltip.chaosgravestone.death_at",
+			tooltip.accept(Component.translatable("tooltip.chaosgravestone.death_at",
 					pos.getX(), pos.getY(), pos.getZ()).withStyle(ChatFormatting.GOLD));
-			tooltip.add(Component.translatable("tooltip.chaosgravestone.dimension", dimName)
+			tooltip.accept(Component.translatable("tooltip.chaosgravestone.dimension", dimName)
 					.withStyle(ChatFormatting.GRAY));
-		}, () -> tooltip.add(Component.translatable("tooltip.chaosgravestone.unlinked")
+		}, () -> tooltip.accept(Component.translatable("tooltip.chaosgravestone.unlinked")
 				.withStyle(ChatFormatting.RED)));
-		tooltip.add(Component.translatable(prefix + ".1").withStyle(ChatFormatting.DARK_GRAY));
-		tooltip.add(Component.translatable(prefix + ".2").withStyle(ChatFormatting.DARK_GRAY));
+		tooltip.accept(Component.translatable(prefix + ".1").withStyle(ChatFormatting.DARK_GRAY));
+		tooltip.accept(Component.translatable(prefix + ".2").withStyle(ChatFormatting.DARK_GRAY));
 	}
 }

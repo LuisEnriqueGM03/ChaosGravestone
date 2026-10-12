@@ -7,6 +7,7 @@ import java.util.function.BiFunction;
 import com.chaos.gravestone.ForgeNetwork;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
@@ -30,7 +31,7 @@ public class ForgePlatform implements Platform {
 
 	@Override
 	public boolean isModLoaded(String modId) {
-		return ModList.get().isLoaded(modId);
+		return ModList.isLoaded(modId);
 	}
 
 	@Override
@@ -39,13 +40,13 @@ public class ForgePlatform implements Platform {
 	}
 
 	@Override
-	public void sendTotemSkull(ServerPlayer player) {
-		ForgeNetwork.sendTotemSkull(player);
+	public void sendToPlayer(ServerPlayer player, CustomPacketPayload payload) {
+		ForgeNetwork.sendToPlayer(player, payload);
 	}
 
 	@Override
 	public <T extends BlockEntity> BlockEntityType<T> blockEntityType(BiFunction<BlockPos, BlockState, T> factory,
 			Set<Block> blocks) {
-		return BlockEntityType.Builder.of(factory::apply, blocks.toArray(Block[]::new)).build(null);
+		return new BlockEntityType<>(factory::apply, blocks);
 	}
 }

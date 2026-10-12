@@ -3,12 +3,11 @@ package com.chaos.gravestone.item;
 import com.chaos.gravestone.GravestoneCompass;
 import com.chaos.gravestone.ModBlocks;
 
+import net.minecraft.core.HolderLookup;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.inventory.CraftingContainer;
-import net.minecraft.core.RegistryAccess;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.crafting.CraftingInput;
 import net.minecraft.world.item.crafting.CustomRecipe;
 import net.minecraft.world.item.crafting.RecipeSerializer;
 import net.minecraft.world.level.Level;
@@ -19,13 +18,13 @@ import net.minecraft.world.level.Level;
  */
 public class EnderGraveCompassRecipe extends CustomRecipe {
 
-	public EnderGraveCompassRecipe(ResourceLocation id, CraftingBookCategory category) {
-		super(id, category);
+	public EnderGraveCompassRecipe() {
+		super();
 	}
 
 	@Override
-	public boolean matches(CraftingContainer input, Level level) {
-		if (input.getWidth() != 3 || input.getHeight() != 3) {
+	public boolean matches(CraftingInput input, Level level) {
+		if (input.width() != 3 || input.height() != 3) {
 			return false;
 		}
 		for (int i = 0; i < 9; i++) {
@@ -46,15 +45,10 @@ public class EnderGraveCompassRecipe extends CustomRecipe {
 	}
 
 	@Override
-	public ItemStack assemble(CraftingContainer input, RegistryAccess registries) {
+	public ItemStack assemble(CraftingInput input) {
 		// Copia los componentes (lápida vinculada) a la versión de ender.
-		ItemStack result = new ItemStack(ModBlocks.ENDER_GRAVE_COMPASS);
-        if (input.getItem(4).hasTag()) result.setTag(input.getItem(4).getTag().copy());
-        return result;
+		return input.getItem(4).transmuteCopy(ModBlocks.ENDER_GRAVE_COMPASS, 1);
 	}
-
-    @Override
-    public boolean canCraftInDimensions(int width, int height) { return width >= 3 && height >= 3; }
 
 	@Override
 	public RecipeSerializer<? extends CustomRecipe> getSerializer() {

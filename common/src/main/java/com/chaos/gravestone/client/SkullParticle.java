@@ -3,10 +3,9 @@ package com.chaos.gravestone.client;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.Particle;
 import net.minecraft.client.particle.ParticleProvider;
-import net.minecraft.client.particle.ParticleRenderType;
 import net.minecraft.client.particle.SpriteSet;
-import net.minecraft.client.particle.TextureSheetParticle;
-import net.minecraft.client.renderer.LightTexture;
+import net.minecraft.client.particle.SingleQuadParticle;
+import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
 
@@ -14,7 +13,7 @@ import net.minecraft.util.Mth;
  * Calavera que sube flotando con un vaivén, crece un poco y se desvanece.
  * Gris translúcida para el rastro de la brújula; dorada (más opaca y lenta) sobre la lápida.
  */
-public class SkullParticle extends TextureSheetParticle {
+public class SkullParticle extends SingleQuadParticle {
 
 	private static final float GRAY_ALPHA = 0.6F;
 	private static final float GOLD_ALPHA = 0.85F;
@@ -28,10 +27,9 @@ public class SkullParticle extends TextureSheetParticle {
 	private final float swayPhase;
 	private final double startY;
 
-	protected SkullParticle(ClientLevel level, double x, double y, double z, SpriteSet sprites, boolean gold) {
-		super(level, x, y, z);
+	protected SkullParticle(ClientLevel level, double x, double y, double z, net.minecraft.client.renderer.texture.TextureAtlasSprite sprite, boolean gold) {
+		super(level, x, y, z, sprite);
 		this.gold = gold;
-		pickSprite(sprites);
 		startY = y;
 		swayPhase = random.nextFloat() * Mth.TWO_PI;
 		gravity = 0;
@@ -75,14 +73,14 @@ public class SkullParticle extends TextureSheetParticle {
 	}
 
 	@Override
-	public ParticleRenderType getRenderType() {
-		return ParticleRenderType.PARTICLE_SHEET_TRANSLUCENT;
+	protected SingleQuadParticle.Layer getLayer() {
+		return SingleQuadParticle.Layer.TRANSLUCENT;
 	}
 
 	/** Se ven también de noche y en cuevas. */
 	@Override
-	protected int getLightColor(float partialTick) {
-		return LightTexture.FULL_BRIGHT;
+	protected int getLightCoords(float partialTick) {
+		return LightCoordsUtil.FULL_BRIGHT;
 	}
 
 	public static class Provider implements ParticleProvider<SimpleParticleType> {
@@ -105,8 +103,8 @@ public class SkullParticle extends TextureSheetParticle {
 
 		@Override
 		public Particle createParticle(SimpleParticleType type, ClientLevel level, double x, double y, double z,
-				double xd, double yd, double zd) {
-			return new SkullParticle(level, x, y, z, sprites, gold);
+				double xd, double yd, double zd, net.minecraft.util.RandomSource random) {
+			return new SkullParticle(level, x, y, z, sprites.get(random), gold);
 		}
 	}
 }
