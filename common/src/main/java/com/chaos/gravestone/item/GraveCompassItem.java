@@ -4,7 +4,6 @@ import java.util.List;
 
 import com.chaos.gravestone.GravestoneCompass;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -32,12 +31,12 @@ public class GraveCompassItem extends Item {
 			Component dimName = Component.translatableWithFallback(
 					"dimension.chaosgravestone." + dim.getPath(), dim.toString());
 			tooltip.accept(Component.translatable("tooltip.chaosgravestone.death_at",
-					pos.getX(), pos.getY(), pos.getZ()).withStyle(ChatFormatting.GOLD));
+					pos.getX(), pos.getY(), pos.getZ()).withStyle(style -> style.withColor(0xFFAA00)));
 			tooltip.accept(Component.translatable("tooltip.chaosgravestone.dimension", dimName)
-					.withStyle(ChatFormatting.GRAY));
+					.withStyle(style -> style.withColor(0xAAAAAA)));
 		}, () -> tooltip.accept(Component.translatable("tooltip.chaosgravestone.unlinked")
-				.withStyle(ChatFormatting.RED)));
-		tooltip.accept(Component.translatable(prefix + ".1").withStyle(ChatFormatting.DARK_GRAY));
-		tooltip.accept(Component.translatable(prefix + ".2").withStyle(ChatFormatting.DARK_GRAY));
+				.withStyle(style -> style.withColor(0xFF5555))));
+		tooltip.accept(Component.translatable(prefix + ".1").withStyle(style -> style.withColor(0x555555)));
+		tooltip.accept(Component.translatable(prefix + ".2").withStyle(style -> style.withColor(0x555555)));
 	}
 }

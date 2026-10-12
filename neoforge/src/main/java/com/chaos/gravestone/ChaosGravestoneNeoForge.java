@@ -32,7 +32,7 @@ public class ChaosGravestoneNeoForge {
 		});
 		NeoForge.EVENT_BUS.addListener((ServerTickEvent.Post event) -> GravestoneCompass.tick(event.getServer()));
 
-        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.BlockEvent.BreakEvent.class, event -> {
+        NeoForge.EVENT_BUS.addListener(net.neoforged.neoforge.event.level.block.BreakBlockEvent.class, event -> {
             if (event.getLevel().getBlockEntity(event.getPos()) instanceof com.chaos.gravestone.block.GravestoneBlockEntity grave
                     && !grave.isDecorative() && !grave.isOwner(event.getPlayer())) event.setCanceled(true);
         });

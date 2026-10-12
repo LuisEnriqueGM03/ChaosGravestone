@@ -77,23 +77,23 @@ public final class SelfTest {
 
 	/** Al final de cada tick del cliente (evento de cada cargador). */
 	public static void tick(Minecraft mc) {
-        if (mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
+        if (mc.gui.screen() instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
             mc.options.onboardAccessibility = false;
             mc.options.save();
-            mc.setScreen(new net.minecraft.client.gui.screens.TitleScreen());
+            mc.gui.setScreen(new net.minecraft.client.gui.screens.TitleScreen());
         }
-        if (!openingWorld && mc.screen instanceof net.minecraft.client.gui.screens.TitleScreen) {
+        if (!openingWorld && mc.gui.screen() instanceof net.minecraft.client.gui.screens.TitleScreen) {
             openingWorld = true;
             String world = "selftest";
             if (new java.io.File(mc.gameDirectory, "saves/" + world + "/level.dat").isFile()) {
-                mc.createWorldOpenFlows().openWorld(world, () -> mc.setScreen(new net.minecraft.client.gui.screens.TitleScreen()));
+                mc.createWorldOpenFlows().openWorld(world, () -> mc.gui.setScreen(new net.minecraft.client.gui.screens.TitleScreen()));
             } else {
                 mc.createWorldOpenFlows().createFreshLevel(world,
                     new net.minecraft.world.level.LevelSettings("Chaos Gravestone selftest", GameType.CREATIVE,
                         new net.minecraft.world.level.LevelSettings.DifficultySettings(net.minecraft.world.Difficulty.PEACEFUL, false, false),
                         true, net.minecraft.world.level.WorldDataConfiguration.DEFAULT),
                     new net.minecraft.world.level.levelgen.WorldOptions(261L, false, false),
-                    net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.screen);
+                    net.minecraft.world.level.levelgen.presets.WorldPresets::createNormalWorldDimensions, mc.gui.screen());
             }
         }
 		if (mc.player == null || mc.level == null || mc.getSingleplayerServer() == null) {
@@ -178,7 +178,7 @@ public final class SelfTest {
 		if (ticks == graveStart + 125) {
 			CreativeModeInventoryScreen screen = new CreativeModeInventoryScreen(mc.player,
 					mc.player.connection.enabledFeatures(), mc.options.operatorItemsTab().get());
-			mc.setScreen(screen);
+			mc.gui.setScreen(screen);
 			if (tabSelector != null) {
 				tabSelector.accept(screen);
 			} else {
@@ -336,7 +336,7 @@ public final class SelfTest {
 	}
 
 	private static void shot(Minecraft mc, String name) {
-		Screenshot.grab(mc.gameDirectory, "selftest_" + name + ".png", mc.getMainRenderTarget(), 1,
+		Screenshot.grab(mc.gameDirectory, "selftest_" + name + ".png", mc.gameRenderer.mainRenderTarget(), 1,
 				msg -> ChaosGravestone.LOGGER.info("[selftest] {}", msg.getString()));
 	}
 }

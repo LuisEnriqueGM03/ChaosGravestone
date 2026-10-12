@@ -1,14 +1,14 @@
-# Validación de Chaos Gravestone 1.1.0 para Minecraft 26.1
+# Validación de Chaos Gravestone 1.1.0 para Minecraft 26.2
 
 Autor: **Goddark83**. Java **25**.
 
 ## Cargadores
 
-- Fabric Loader 0.19.5 y Fabric API 0.145.1+26.1.
-- NeoForge 26.1.0.19-beta, publicado como beta por el estado del propio cargador.
-- Forge 62.0.9.
+- Fabric Loader 0.19.5 y Fabric API 0.161.0+26.2.
+- NeoForge 26.2.0.90 estable.
+- Forge 65.1.3.
 
-Las ramas `fabric-26.1`, `neoforge-26.1` y `forge-26.1` seleccionan su cargador mediante `default_loader`. Los metadatos se limitan a Minecraft 26.1 exacta.
+Las ramas `fabric-26.2`, `neoforge-26.2` y `forge-26.2` seleccionan su cargador mediante `default_loader`. Los metadatos se limitan a Minecraft 26.2 exacta.
 
 ## Pruebas
 
@@ -22,7 +22,7 @@ Las autopruebas crean una partida desechable por cargador y comprueban:
 - Receta de ender vinculada, rechazo de un patrón incorrecto y teletransporte a un destino seguro.
 - Capturas del texto de las lápidas, brújulas, variantes y partículas.
 
-Los JAR se inspeccionan para comprobar autor, versión, Java 25, metadata, receta, servicios de plataforma y definiciones de brújula. Al no estar ofuscado Minecraft 26.1, no requieren refmap de obfuscación.
+Los JAR se inspeccionan para comprobar autor, versión, Java 25, metadata, receta, servicios de plataforma y definiciones de brújula. Al no estar ofuscado Minecraft 26.2, no requieren refmap de obfuscación.
 
 ## Alcance
 

@@ -1,6 +1,6 @@
 # Chaos Gravestone
 
-Mod de lápidas para **Minecraft 26.1**, para **Fabric**, **NeoForge** y **Forge**. Al morir queda una lápida protegida con todo tu inventario; al abrirla, cada objeto vuelve a su ranura.
+Mod de lápidas para **Minecraft 26.2**, para **Fabric**, **NeoForge** y **Forge**. Al morir queda una lápida protegida con todo tu inventario; al abrirla, cada objeto vuelve a su ranura.
 
 - Lápida solo para su dueño (configurable); si la rompe, todo cae al suelo.
 - 18 estilos que se eligen según bioma, profundidad y dimensión, con nombre, fecha, hora y causa de la muerte grabados.
@@ -11,7 +11,7 @@ Mod de lápidas para **Minecraft 26.1**, para **Fabric**, **NeoForge** y **Forge
 
 Integración con Accessories, Trinkets/Curios, Travelers Backpack y Cosmetic Armor: pendiente.
 
-Autor: **Goddark83**. Las ramas `fabric-26.1`, `neoforge-26.1` y `forge-26.1` seleccionan su cargador de forma predeterminada mediante `default_loader` en `gradle.properties`.
+Autor: **Goddark83**. Las ramas `fabric-26.2`, `neoforge-26.2` y `forge-26.2` seleccionan su cargador de forma predeterminada mediante `default_loader` en `gradle.properties`.
 
 ## Estructura
 
@@ -19,14 +19,14 @@ Basada en [MultiLoader-Template](https://github.com/jaredlll08/MultiLoader-Templ
 
 | Módulo | Contenido |
 |---|---|
-| `common` | Casi todo el mod (lápidas, brújulas, partículas, renderer, recursos). Se compila dentro de cada cargador para Minecraft 26.1. |
+| `common` | Casi todo el mod (lápidas, brújulas, partículas, renderer, recursos). Se compila dentro de cada cargador para Minecraft 26.2. |
 | `fabric` | Arranque, eventos y red con Fabric API. |
 | `neoforge` | Arranque, `RegisterEvent`, eventos y red con NeoForge. |
 | `forge` | Arranque, `RegisterEvent`, eventos y red con Forge. Usa ForgeGradle 7 y comparte el código y los recursos de `common`. |
 
 Lo que depende del cargador pasa por `common/.../platform/Platform` (una implementación por cargador, vía `ServiceLoader`).
 
-Fabric usa Loom sin remapeo, NeoForge usa ModDevGradle y Forge usa ForgeGradle 7. Minecraft 26.1 proporciona nombres oficiales sin ofuscación.
+Fabric usa Loom sin remapeo, NeoForge usa ModDevGradle y Forge usa ForgeGradle 7. Minecraft 26.2 proporciona nombres oficiales sin ofuscación.
 
 ## Compilar
 
@@ -59,12 +59,10 @@ java tools/TextureGen.java
 
 MIT
 
-## Minecraft 26.1
+## Minecraft 26.2
 
-Fabric API 0.145.1+26.1, NeoForge 26.1.0.19-beta y Forge 62.0.9. Instalar el JAR del cargador elegido en cliente y servidor. No mezclar JAR de distintos cargadores.
+Fabric API 0.161.0+26.2, NeoForge 26.2.0.90 y Forge 65.1.3. Instalar el JAR del cargador elegido en cliente y servidor. No mezclar JAR de distintos cargadores.
 
 Las brújulas pendientes se guardan con el mundo para sobrevivir a reinicios. El teletransporte se cancela cuando no hay un lugar seguro y verifica la identidad de la tumba. Si falla la colocación de la lápida, se sueltan los objetos para conservarlos. La protección de rotura se aplica también en creativo.
 
 Las autopruebas visuales crean una partida `selftest` en la carpeta de ejecución del cargador y guardan capturas en `screenshots/`. Solo actúan cuando se ejecutan las tareas de desarrollo indicadas.
-
-NeoForge 26.1 está disponible como beta. El archivo para ese cargador se publica con la misma etiqueta en CurseForge.
