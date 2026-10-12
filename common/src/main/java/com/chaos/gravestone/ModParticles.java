@@ -16,8 +16,8 @@ public final class ModParticles {
 	private ModParticles() {}
 
 	public static void register(Registrar<ParticleType<?>> registrar) {
-		registrar.register(ResourceLocation.fromNamespaceAndPath(ChaosGravestone.MOD_ID, "skull"), SKULL);
-		registrar.register(ResourceLocation.fromNamespaceAndPath(ChaosGravestone.MOD_ID, "gold_skull"), GOLD_SKULL);
+		registrar.register(new ResourceLocation(ChaosGravestone.MOD_ID, "skull"), SKULL);
+		registrar.register(new ResourceLocation(ChaosGravestone.MOD_ID, "gold_skull"), GOLD_SKULL);
 	}
 
 	/** El constructor vanilla es protegido; una subclase anónima basta (es lo que hace Fabric por dentro). */

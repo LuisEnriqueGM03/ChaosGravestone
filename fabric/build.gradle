@@ -12,6 +12,7 @@ dependencies {
 
 loom {
 	mixin {
+        useLegacyMixinAp = true
 		defaultRefmapName.set("${mod_id}.refmap.json")
 	}
 	runs {
@@ -27,7 +28,6 @@ loom {
 			client()
 			name "Self Test"
 			runDir "../run-${minecraft_version}"
-			programArgs "--quickPlaySingleplayer", "selftest"
 			vmArg "-Dchaosgravestone.selftest=true"
 		}
 	}

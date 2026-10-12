@@ -665,27 +665,19 @@ public class TextureGen {
 				}
 				""".formatted(name));
 
-		// Definición de ítem (1.21.4+): igual que items/compass.json de vanilla, apuntando a la
-		// "piedra imán" del componente lodestone_tracker, que es la lápida. Sin destino gira sin control.
-		StringBuilder entries = new StringBuilder();
-		entries.append(entry(0.0, name, 16)).append(",\n");
-		for (int i = 1; i < FRAMES; i++) {
-			entries.append(entry(i - 0.5, name, (16 + i) % FRAMES)).append(",\n");
-		}
-		entries.append(entry(FRAMES - 0.5, name, 16)).append('\n');
-		write(ITEM_DEF + name + ".json", """
-				{
-					"model": {
-						"type": "minecraft:range_dispatch",
-						"property": "minecraft:compass",
-						"target": "lodestone",
-						"scale": 32.0,
-						"entries": [
-				%s			]
-					}
-				}
-				""".formatted(entries));
-	}
+        StringBuilder overrides = new StringBuilder();
+        for (int i = 0; i < FRAMES; i++) {
+            if (i > 0) overrides.append(",\n");
+            overrides.append(String.format(java.util.Locale.ROOT,
+                "{ \"predicate\": { \"angle\": %.5f }, \"model\": \"chaosgravestone:item/%s_%02d\" }",
+                i / 32.0, name, (16 + i) % FRAMES));
+        }
+        write(ITEM_MODEL + name + ".json", """
+            { "parent": "minecraft:item/generated",
+              "textures": { "layer0": "chaosgravestone:item/%s_16" },
+              "overrides": [%s] }
+            """.formatted(name, overrides));
+    }
 
 	static String entry(double threshold, String name, int frame) {
 		return String.format(Locale.ROOT,

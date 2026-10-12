@@ -16,7 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.ItemUseAnimation;
+import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 
 /**
@@ -38,34 +38,34 @@ public class EnderGraveCompassItem extends Item {
 	}
 
 	@Override
-	public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+	public void appendHoverText(ItemStack stack, Level context, List<Component> tooltip, TooltipFlag flag) {
 		GraveCompassItem.addGraveTooltip(stack, tooltip, "tooltip.chaosgravestone.ender_grave_compass");
 	}
 
 	@Override
-	public int getUseDuration(ItemStack stack, LivingEntity entity) {
+	public int getUseDuration(ItemStack stack) {
 		return CHARGE_TICKS;
 	}
 
 	@Override
-	public ItemUseAnimation getUseAnimation(ItemStack stack) {
-		return ItemUseAnimation.BOW;
+	public UseAnim getUseAnimation(ItemStack stack) {
+		return UseAnim.BOW;
 	}
 
 	@Override
-	public InteractionResult use(Level level, Player player, InteractionHand hand) {
+	public net.minecraft.world.InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
 		ItemStack stack = player.getItemInHand(hand);
 		if (GravestoneCompass.read(stack).isEmpty()) {
 			if (!level.isClientSide) {
 				player.displayClientMessage(Component.translatable("message.chaosgravestone.unlinked"), true);
 			}
-			return InteractionResult.FAIL;
+			return net.minecraft.world.InteractionResultHolder.fail(stack);
 		}
 		player.startUsingItem(hand);
 		if (!level.isClientSide) {
 			level.playSound(null, player.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 0.3F, 1.4F);
 		}
-		return InteractionResult.CONSUME;
+		return net.minecraft.world.InteractionResultHolder.consume(stack);
 	}
 
 	/** Mientras carga, partículas de portal que se intensifican. */
@@ -88,7 +88,7 @@ public class EnderGraveCompassItem extends Item {
 		if (!level.isClientSide && entity instanceof ServerPlayer player) {
 			GravestoneCompass.read(stack).ifPresent(ref -> {
 				if (GravestoneCompass.teleportToGrave(player, ref)) {
-					player.getCooldowns().addCooldown(stack, COOLDOWN_TICKS);
+					player.getCooldowns().addCooldown(stack.getItem(), COOLDOWN_TICKS);
 				}
 			});
 		}

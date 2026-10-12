@@ -48,12 +48,14 @@ public final class GravestoneManager {
 
 		BlockState state = ModBlocks.get(GravestoneVariant.choose(level, spot)).defaultBlockState()
 				.setValue(GravestoneBlock.FACING, player.getDirection().getOpposite());
-		level.setBlockAndUpdate(spot, state);
-		if (level.getBlockEntity(spot) instanceof GravestoneBlockEntity grave) {
+		if (level.setBlockAndUpdate(spot, state) && level.getBlockEntity(spot) instanceof GravestoneBlockEntity grave) {
 			grave.init(player, contents, cause);
-			GravestoneCompass.addPending(player.getUUID(),
+			GravestoneCompass.addPending(player,
 					new GravestoneCompass.GraveRef(grave.getGraveId(), GlobalPos.of(level.dimension(), spot)));
-		}
+        } else {
+            contents.forEach(e -> Containers.dropItemStack(level, player.getX(), player.getY(), player.getZ(), e.stack()));
+            return;
+        }
 
 		if (GravestoneConfig.get().showCoordinates) {
 			player.sendSystemMessage(Component.translatable("message.chaosgravestone.created",
@@ -64,8 +66,8 @@ public final class GravestoneManager {
 	/** Hueco más cercano al punto de muerte: reemplazable y sin lava. */
 	@Nullable
 	private static BlockPos findSpot(ServerLevel level, BlockPos origin) {
-		int minY = level.getMinY() + 1;
-		int maxY = level.getMaxY() - 1;
+		int minY = level.getMinBuildHeight() + 1;
+		int maxY = level.getMaxBuildHeight() - 1;
 		BlockPos start = new BlockPos(origin.getX(), Math.max(minY, Math.min(origin.getY(), maxY)), origin.getZ());
 		BlockPos best = null;
 		double bestDist = Double.MAX_VALUE;

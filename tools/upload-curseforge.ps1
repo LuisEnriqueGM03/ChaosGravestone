@@ -1,7 +1,7 @@
 ﻿# Sube los jars del mod a CurseForge (uno por cargador).
 # Token: variable de entorno CURSEFORGE_TOKEN (de la sesiÃ³n o guardada con `setx`).
 # Uso:  powershell -File tools/upload-curseforge.ps1 [-Loader fabric|neoforge|forge|all] [-DryRun]
-# Antes: ./gradlew build  y  ./gradlew -p forge build
+# Antes: ./gradlew -Ploader=all build
 param(
 	[string]$ProjectId = "1728749",
 	[string]$ReleaseType = "release",
@@ -36,7 +36,7 @@ foreach ($name in $selected) {
 	if (-not $jar) { throw "No existe $name/build/libs/chaosgravestone-$name-$mcVersion-$version.jar; ejecuta gradlew build" }
 
 	# Ids de CurseForge para versiÃ³n de juego, cargador, Java y entorno.
-	$ids = foreach ($wanted in $mcVersion, $cfg.GameVersion, "Java 21", "Client", "Server") {
+	$ids = foreach ($wanted in $mcVersion, $cfg.GameVersion, "Java 17", "Client", "Server") {
 		$match = $all | Where-Object { $_.name -eq $wanted } | Select-Object -First 1
 		if (-not $match) { throw "CurseForge no tiene la versiÃ³n '$wanted'" }
 		Write-Host "  $wanted -> $($match.id)"
@@ -47,7 +47,7 @@ foreach ($name in $selected) {
 		# ReadAllText: en PowerShell 5.1, Get-Content -Raw aÃ±ade propiedades que ConvertTo-Json serializa.
 		changelog     = [IO.File]::ReadAllText("$root\tools\changelog.md", [Text.Encoding]::UTF8)
 		changelogType = "markdown"
-		displayName   = "Chaos Gravestone - $version ($mcVersion)"
+		displayName   = "Chaos Gravestone $version - $($cfg.GameVersion) $mcVersion"
 		gameVersions  = @($ids)
 		releaseType   = $ReleaseType
 	}

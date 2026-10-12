@@ -15,7 +15,6 @@ import com.chaos.gravestone.storage.SlotProvider;
 import com.chaos.gravestone.storage.StoredEntry;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -158,7 +157,7 @@ public class GravestoneBlockEntity extends BlockEntity {
 	}
 
 	/** Datos que se graban en la lápida; los comparten el guardado y la sincronización. */
-	private void saveDisplay(CompoundTag tag, HolderLookup.Provider registries) {
+	private void saveDisplay(CompoundTag tag) {
 		if (owner != null) {
 			tag.putUUID("owner", owner);
 		}
@@ -167,31 +166,31 @@ public class GravestoneBlockEntity extends BlockEntity {
 		tag.putLong("deathDay", deathDay);
 		tag.putInt("itemCount", itemCount);
 		if (deathCause != null) {
-			tag.putString("deathCause", Component.Serializer.toJson(deathCause, registries));
+			tag.putString("deathCause", Component.Serializer.toJson(deathCause));
 		}
 	}
 
 	@Override
-	protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.saveAdditional(tag, registries);
-		saveDisplay(tag, registries);
+	protected void saveAdditional(CompoundTag tag) {
+		super.saveAdditional(tag);
+		saveDisplay(tag);
 		tag.putUUID("graveId", graveId);
 		tag.putLong("deathTime", deathTime);
 		ListTag list = new ListTag();
 		for (StoredEntry entry : entries) {
-			list.add(entry.save(registries));
+			list.add(entry.save());
 		}
 		tag.put("entries", list);
 	}
 
 	@Override
-	protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-		super.loadAdditional(tag, registries);
+	public void load(CompoundTag tag) {
+		super.load(tag);
 		ownerName = tag.getString("ownerName");
 		deathMillis = tag.getLong("deathMillis");
 		deathDay = tag.getLong("deathDay");
 		deathCause = tag.contains("deathCause")
-				? Component.Serializer.fromJson(tag.getString("deathCause"), registries)
+				? Component.Serializer.fromJson(tag.getString("deathCause"))
 				: null;
 		if (tag.hasUUID("graveId")) {
 			graveId = tag.getUUID("graveId");
@@ -200,7 +199,7 @@ public class GravestoneBlockEntity extends BlockEntity {
 		deathTime = tag.getLong("deathTime");
 		entries.clear();
 		for (Tag t : tag.getList("entries", Tag.TAG_COMPOUND)) {
-			StoredEntry entry = StoredEntry.load((CompoundTag) t, registries);
+			StoredEntry entry = StoredEntry.load((CompoundTag) t);
 			if (!entry.stack().isEmpty()) {
 				entries.add(entry);
 			}
@@ -210,9 +209,9 @@ public class GravestoneBlockEntity extends BlockEntity {
 
 	/** Al cliente solo le llegan los datos del grabado, nunca el inventario. */
 	@Override
-	public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+	public CompoundTag getUpdateTag() {
 		CompoundTag tag = new CompoundTag();
-		saveDisplay(tag, registries);
+		saveDisplay(tag);
 		return tag;
 	}
 

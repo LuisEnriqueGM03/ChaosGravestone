@@ -11,7 +11,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.enchantment.EnchantmentEffectComponents;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 
 /** Inventario vanilla: 0-35 principal, 36-39 armadura, 40 mano secundaria. */
@@ -38,12 +37,12 @@ public final class VanillaProvider implements SlotProvider {
 			var compass = GravestoneCompass.read(stack);
 			if (compass.isPresent()) {
 				// Se devuelve la misma (conserva la de ender); las vanilla antiguas pasan a la del mod.
-				GravestoneCompass.addPending(player.getUUID(),
+				GravestoneCompass.addPending(player,
 						stack.is(Items.COMPASS) ? GravestoneCompass.create(compass.get()) : stack);
 				continue;
 			}
 			// Maldición de desaparición: el objeto se pierde, igual que en vanilla.
-			if (EnchantmentHelper.has(stack, EnchantmentEffectComponents.PREVENT_EQUIPMENT_DROP)) {
+			if (EnchantmentHelper.hasVanishingCurse(stack)) {
 				continue;
 			}
 			out.add(new StoredEntry(ID, "slot#" + i, stack));

@@ -1,40 +1,28 @@
-// Módulo de cargador (fabric / neoforge): compila y empaqueta también el código y recursos de :common.
-plugins {
-	id 'multiloader-common'
+plugins { id 'java-library' }
+base.archivesName = "${mod_id}-${project.name}-${minecraft_version}"
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(java_version as int)
+    withSourcesJar()
 }
-
-configurations {
-	commonJava {
-		canBeResolved = true
-	}
-	commonResources {
-		canBeResolved = true
-	}
+repositories {
+    mavenCentral()
+    maven { url = 'https://repo.spongepowered.org/repository/maven-public' }
 }
-
-dependencies {
-	compileOnly(project(':common')) {
-		capabilities {
-			requireCapability "$group:$mod_id"
-		}
-	}
-	commonJava project(path: ':common', configuration: 'commonJava')
-	commonResources project(path: ':common', configuration: 'commonResources')
+sourceSets.main {
+    java.srcDir '../common/src/main/java'
+    resources.srcDir '../common/src/main/resources'
 }
-
-tasks.named('compileJava', JavaCompile) {
-	dependsOn(configurations.commonJava)
-	source(configurations.commonJava)
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = java_version as int
 }
-
+dependencies { compileOnly 'org.jetbrains:annotations:24.1.0' }
 processResources {
-	dependsOn(configurations.commonResources)
-	from(configurations.commonResources)
+    def props = [version: version, mod_id: mod_id, mod_name: mod_name, mod_author: mod_author,
+                 license: license, minecraft_version_range: minecraft_version_range]
+    inputs.properties(props)
+    filesMatching(['fabric.mod.json', 'META-INF/mods.toml']) { expand props }
 }
-
-tasks.named('sourcesJar', Jar) {
-	dependsOn(configurations.commonJava)
-	from(configurations.commonJava)
-	dependsOn(configurations.commonResources)
-	from(configurations.commonResources)
+jar {
+    from(rootProject.file('LICENSE')) { rename { "${it}_${mod_id}" } }
 }

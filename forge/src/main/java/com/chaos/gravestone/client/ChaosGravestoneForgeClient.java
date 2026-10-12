@@ -11,12 +11,14 @@ import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 
-/** Parte de cliente de Forge: renderer de la lápida, partículas y aguja de las brújulas. */
+/** Parte de cliente de Forge: renderer de la lÃ¡pida, partÃ­culas y aguja de las brÃºjulas. */
 public final class ChaosGravestoneForgeClient {
 
 	private ChaosGravestoneForgeClient() {}
 
 	public static void init(IEventBus modBus) {
+        modBus.addListener(EventPriority.NORMAL, false, net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent.class,
+            event -> event.enqueueWork(ChaosGravestoneClient::registerCompassModels));
 		modBus.addListener(EventPriority.NORMAL, false, EntityRenderersEvent.RegisterRenderers.class, event ->
 				event.registerBlockEntityRenderer(ModBlocks.GRAVESTONE_ENTITY, GravestoneRenderer::new));
 		modBus.addListener(EventPriority.NORMAL, false, RegisterParticleProvidersEvent.class, event -> {
@@ -25,8 +27,9 @@ public final class ChaosGravestoneForgeClient {
 		});
 
 		if (SelfTest.enabled()) {
-			MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.ClientTickEvent.Post.class, event ->
-					SelfTest.tick(Minecraft.getInstance()));
+			MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.ClientTickEvent.class, event -> {
+                if (event.phase == TickEvent.Phase.END) SelfTest.tick(Minecraft.getInstance());
+            });
 		}
 	}
 }

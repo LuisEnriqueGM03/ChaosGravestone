@@ -1,21 +1,18 @@
 pluginManagement {
-	repositories {
-		maven {
-			name = 'Fabric'
-			url = 'https://maven.fabricmc.net/'
-		}
-		maven {
-			name = 'NeoForged'
-			url = 'https://maven.neoforged.net/releases'
-		}
-		mavenCentral()
-		gradlePluginPortal()
-	}
+    repositories {
+        maven { url = 'https://maven.fabricmc.net/' }
+        maven { url = 'https://maven.neoforged.net/releases' }
+        mavenCentral()
+        gradlePluginPortal()
+    }
 }
-
 rootProject.name = 'chaosgravestone'
-
-// common: código compartido (solo Minecraft vanilla). fabric / neoforge: arranque y eventos de cada cargador.
-include('common')
-include('fabric')
-include('neoforge')
+def selectedLoader = providers.gradleProperty('loader')
+    .orElse(providers.gradleProperty('default_loader').orElse('fabric')).get()
+if (selectedLoader == 'all') {
+    include('fabric', 'neoforge', 'forge')
+} else if (selectedLoader in ['fabric', 'neoforge', 'forge']) {
+    include(selectedLoader)
+} else {
+    throw new GradleException('loader debe ser fabric, neoforge, forge o all')
+}

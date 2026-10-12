@@ -1,7 +1,6 @@
 {
-	"pack": {
-		"description": "Chaos Gravestone",
-		"pack_format": 61,
-		"supported_formats": [46, 61]
-	}
+  "pack": {
+    "description": "Chaos Gravestone",
+    "pack_format": 15
+  }
 }

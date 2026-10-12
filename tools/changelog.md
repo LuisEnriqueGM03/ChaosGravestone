@@ -1,7 +1,12 @@
-## Chaos Gravestone 1.1.0 para Minecraft 1.21.4
+## Chaos Gravestone 1.1.0 para Minecraft 1.20.1
 
-- **Nuevo: versión para Minecraft 1.21.4** (Fabric, NeoForge y Forge), con las mismas funciones que la de 1.21.1.
+- Versiones para Fabric, NeoForge y Forge con Java 17.
+- Lápidas protegidas, restauración a la ranura original, 18 estilos y brújulas con partículas.
+- Brújula de ender con receta vinculada y teletransporte entre dimensiones.
+- Conserva las brújulas pendientes al reiniciar el servidor.
+- Cancela el teletransporte cuando no existe un destino seguro y comprueba la identidad de la tumba.
+- Conserva los objetos si falla la colocación de la lápida y aplica protección de rotura también en creativo.
 
-Incluye: lápida protegida con restauración de objetos a su ranura, 18 estilos según bioma y dimensión, brújula de lápida con rastro de calaveras y brújula de ender que teletransporta.
+Instalar en cliente y servidor. Fabric requiere Fabric API. Integraciones con inventarios de accesorios: pendientes.
 
-Integración con Accessories, Trinkets/Curios, Travelers Backpack y Cosmetic Armor: próximamente.
+Validación: compilación, autoprueba en una partida aislada, restauración de inventario y NBT, recetas, partículas, teletransporte y recursos.

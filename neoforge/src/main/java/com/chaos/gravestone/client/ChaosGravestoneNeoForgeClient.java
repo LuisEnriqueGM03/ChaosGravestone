@@ -4,27 +4,32 @@ import com.chaos.gravestone.ModBlocks;
 import com.chaos.gravestone.ModParticles;
 
 import net.minecraft.client.Minecraft;
-import net.neoforged.bus.api.IEventBus;
-import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.common.NeoForge;
-import net.neoforged.neoforge.client.event.EntityRenderersEvent;
-import net.neoforged.neoforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.client.event.EntityRenderersEvent;
+import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
+import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.IEventBus;
 
-/** Parte de cliente de NeoForge: renderer de la lápida, partículas y aguja de las brújulas. */
+/** Parte de cliente de Forge: renderer de la lÃƒÂ¡pida, partÃƒÂ­culas y aguja de las brÃƒÂºjulas. */
 public final class ChaosGravestoneNeoForgeClient {
 
 	private ChaosGravestoneNeoForgeClient() {}
 
 	public static void init(IEventBus modBus) {
-		modBus.addListener((EntityRenderersEvent.RegisterRenderers event) ->
+        modBus.addListener(EventPriority.NORMAL, false, net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent.class,
+            event -> event.enqueueWork(ChaosGravestoneClient::registerCompassModels));
+		modBus.addListener(EventPriority.NORMAL, false, EntityRenderersEvent.RegisterRenderers.class, event ->
 				event.registerBlockEntityRenderer(ModBlocks.GRAVESTONE_ENTITY, GravestoneRenderer::new));
-		modBus.addListener((RegisterParticleProvidersEvent event) -> {
+		modBus.addListener(EventPriority.NORMAL, false, RegisterParticleProvidersEvent.class, event -> {
 			event.registerSpriteSet(ModParticles.SKULL, SkullParticle.Provider::gray);
 			event.registerSpriteSet(ModParticles.GOLD_SKULL, SkullParticle.Provider::gold);
 		});
 
 		if (SelfTest.enabled()) {
-			NeoForge.EVENT_BUS.addListener((ClientTickEvent.Post event) -> SelfTest.tick(Minecraft.getInstance()));
+			MinecraftForge.EVENT_BUS.addListener(EventPriority.NORMAL, false, TickEvent.ClientTickEvent.class, event -> {
+                if (event.phase == TickEvent.Phase.END) SelfTest.tick(Minecraft.getInstance());
+            });
 		}
 	}
 }

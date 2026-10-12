@@ -5,7 +5,6 @@ import java.util.Set;
 import java.util.function.BiFunction;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.level.block.Block;
@@ -26,7 +25,7 @@ public interface Platform {
 	/** Constructor de pestaña creativa (vanilla exige fila/columna; cada cargador da el suyo). */
 	CreativeModeTab.Builder creativeTabBuilder();
 
-	void sendToPlayer(ServerPlayer player, CustomPacketPayload payload);
+	void sendTotemSkull(ServerPlayer player);
 
 	/** Desde 1.21.2 el constructor vanilla es privado; cada cargador lo expone a su manera. */
 	<T extends BlockEntity> BlockEntityType<T> blockEntityType(BiFunction<BlockPos, BlockState, T> factory,

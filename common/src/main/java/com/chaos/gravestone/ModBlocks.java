@@ -52,7 +52,6 @@ public final class ModBlocks {
 			// Dureza -1: las lápidas con dueño solo se "abren". Las decorativas (sin dueño) se rompen
 			// con normalidad, ver GravestoneBlock#getDestroyProgress.
 			GravestoneBlock block = new GravestoneBlock(BlockBehaviour.Properties.of()
-					.setId(ResourceKey.create(Registries.BLOCK, id(variant.id())))
 					.strength(-1.0F, 3600000.0F)
 					.sound(variant.sound())
 					.lightLevel(state -> variant.light())
@@ -66,7 +65,7 @@ public final class ModBlocks {
 
 	public static void registerItems(Registrar<Item> registrar) {
 		GRAVESTONES.forEach((variant, block) ->
-				registrar.register(id(variant.id()), new BlockItem(block, itemProps(variant.id()).useBlockDescriptionPrefix())));
+				registrar.register(id(variant.id()), new BlockItem(block, itemProps(variant.id()))));
 		GRAVE_COMPASS = new GraveCompassItem(itemProps("grave_compass").stacksTo(1));
 		registrar.register(id("grave_compass"), GRAVE_COMPASS);
 		ENDER_GRAVE_COMPASS = new EnderGraveCompassItem(itemProps("ender_grave_compass").stacksTo(1));
@@ -82,7 +81,7 @@ public final class ModBlocks {
 	}
 
 	public static void registerRecipeSerializers(Registrar<RecipeSerializer<?>> registrar) {
-		ENDER_GRAVE_COMPASS_RECIPE = new CustomRecipe.Serializer<>(EnderGraveCompassRecipe::new);
+		ENDER_GRAVE_COMPASS_RECIPE = new net.minecraft.world.item.crafting.SimpleCraftingRecipeSerializer<>(EnderGraveCompassRecipe::new);
 		registrar.register(id("ender_grave_compass"), ENDER_GRAVE_COMPASS_RECIPE);
 	}
 
@@ -116,10 +115,10 @@ public final class ModBlocks {
 
 	/** Desde 1.21.2 cada ítem lleva su id en las propiedades al crearse. */
 	private static Item.Properties itemProps(String path) {
-		return new Item.Properties().setId(ResourceKey.create(Registries.ITEM, id(path)));
+		return new Item.Properties();
 	}
 
 	private static ResourceLocation id(String path) {
-		return ResourceLocation.fromNamespaceAndPath(ChaosGravestone.MOD_ID, path);
+		return new ResourceLocation(ChaosGravestone.MOD_ID, path);
 	}
 }
