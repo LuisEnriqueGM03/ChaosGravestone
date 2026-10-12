@@ -1,0 +1,29 @@
+[
+  {
+    "project_id": 1728749,
+    "loader": "fabric",
+    "minecraft": "1.20.1",
+    "version": "1.1.0",
+    "file_id": 9142221,
+    "sha256": "fc93e8ff5a9d0f9fc9a7545c14e1e3ea7bce98a093ca8348403bf8d8bbdfb3a5",
+    "url": "https://www.curseforge.com/minecraft/mc-mods/chaos-gravestone/files/9142221"
+  },
+  {
+    "project_id": 1728749,
+    "loader": "neoforge",
+    "minecraft": "1.20.1",
+    "version": "1.1.0",
+    "file_id": 9142222,
+    "sha256": "6a8f1c36c1819bceb73f3af12d8074b3b7b34ee9e222c6e63544fc5c02bd423d",
+    "url": "https://www.curseforge.com/minecraft/mc-mods/chaos-gravestone/files/9142222"
+  },
+  {
+    "project_id": 1728749,
+    "loader": "forge",
+    "minecraft": "1.20.1",
+    "version": "1.1.0",
+    "file_id": 9142223,
+    "sha256": "d1666f6136812316d6fb4b6ee67054dccca2fb7cb23fe6c8bb6ebf8e46b653c4",
+    "url": "https://www.curseforge.com/minecraft/mc-mods/chaos-gravestone/files/9142223"
+  }
+]
