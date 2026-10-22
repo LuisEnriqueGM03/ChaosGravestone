@@ -35,5 +35,6 @@
 	"message.chaosgravestone.created": "Your gravestone is at %s, %s, %s (%s)",
 	"message.chaosgravestone.not_yours": "This gravestone belongs to %s",
 	"message.chaosgravestone.unlinked": "This compass is not linked to any gravestone",
-	"message.chaosgravestone.grave_gone": "That gravestone no longer exists"
+	"message.chaosgravestone.grave_gone": "That gravestone no longer exists",
+	"message.chaosgravestone.compass_vanished": "The compass fades away"
 }

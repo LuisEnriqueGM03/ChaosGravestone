@@ -9,6 +9,9 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.itemgroup.v1.FabricCreativeInventoryScreen;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
+import net.fabricmc.loader.api.FabricLoader;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 
 public class ChaosGravestoneFabricClient implements ClientModInitializer {
@@ -25,6 +28,20 @@ public class ChaosGravestoneFabricClient implements ClientModInitializer {
 		if (SelfTest.enabled()) {
 			SelfTest.tabSelector = screen -> ((FabricCreativeInventoryScreen) screen).setSelectedItemGroup(ModBlocks.TAB);
 			ClientTickEvents.END_CLIENT_TICK.register(SelfTest::tick);
+			// Simula un mod de revivir: cancela la muerte y deja al jugador con vida.
+			ServerLivingEntityEvents.ALLOW_DEATH.register((entity, source, amount) -> {
+				if (LogicTest.cancelNextDeath && entity instanceof ServerPlayer) {
+					entity.setHealth(1.0F);
+					return false;
+				}
+				return true;
+			});
+			if (FabricLoader.getInstance().isModLoaded("accessories")) {
+				LogicTest.compat.add(new SelfTestCompat.Accessories());
+			}
+			if (FabricLoader.getInstance().isModLoaded("trinkets")) {
+				LogicTest.compat.add(new SelfTestCompat.Trinkets());
+			}
 		}
 	}
 }

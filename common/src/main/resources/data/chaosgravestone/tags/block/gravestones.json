@@ -1,0 +1,23 @@
+{
+	"replace": false,
+	"values": [
+		"chaosgravestone:gravestone",
+		"chaosgravestone:mossy_gravestone",
+		"chaosgravestone:sandstone_gravestone",
+		"chaosgravestone:frost_gravestone",
+		"chaosgravestone:deepslate_gravestone",
+		"chaosgravestone:nether_gravestone",
+		"chaosgravestone:end_gravestone",
+		"chaosgravestone:prismarine_gravestone",
+		"chaosgravestone:cherry_gravestone",
+		"chaosgravestone:amethyst_gravestone",
+		"chaosgravestone:copper_gravestone",
+		"chaosgravestone:quartz_gravestone",
+		"chaosgravestone:gilded_gravestone",
+		"chaosgravestone:sculk_gravestone",
+		"chaosgravestone:crimson_gravestone",
+		"chaosgravestone:warped_gravestone",
+		"chaosgravestone:terracotta_gravestone",
+		"chaosgravestone:mushroom_gravestone"
+	]
+}

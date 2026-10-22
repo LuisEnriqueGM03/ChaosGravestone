@@ -7,7 +7,9 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -25,6 +27,13 @@ public class ChaosGravestoneForge {
 
 		modBus.addListener(ChaosGravestoneForge::register);
 
+		// La lápida se crea aquí, después de que cualquier otro mod haya podido cancelar la muerte.
+		GravestoneManager.loaderHandlesDeath = true;
+		MinecraftForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, LivingDeathEvent.class, event -> {
+			if (event.getEntity() instanceof ServerPlayer player) {
+				GravestoneManager.onPlayerDeath(player);
+			}
+		});
 		MinecraftForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent event) -> {
 			if (event.getEntity() instanceof ServerPlayer player) {
 				GravestoneCompass.onRespawn(player);

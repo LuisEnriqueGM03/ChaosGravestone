@@ -38,7 +38,7 @@ public final class VanillaProvider implements SlotProvider {
 			var compass = GravestoneCompass.read(stack);
 			if (compass.isPresent()) {
 				// Se devuelve la misma (conserva la de ender); las vanilla antiguas pasan a la del mod.
-				GravestoneCompass.addPending(player.getUUID(),
+				GravestoneCompass.addPending(player,
 						stack.is(Items.COMPASS) ? GravestoneCompass.create(compass.get()) : stack);
 				continue;
 			}
@@ -55,8 +55,17 @@ public final class VanillaProvider implements SlotProvider {
 	public boolean restore(ServerPlayer player, StoredEntry entry) {
 		int index = parseIndex(entry.slotKey());
 		Inventory inv = player.getInventory();
-		if (index < 0 || index >= inv.getContainerSize() || !inv.getItem(index).isEmpty()) {
+		if (index < 0 || index >= inv.getContainerSize()) {
 			return false;
+		}
+		ItemStack current = inv.getItem(index);
+		if (!current.isEmpty()) {
+			// Una brújula de otra lápida (entregada al reaparecer) se aparta; cualquier otra cosa no se toca.
+			int free = inv.getFreeSlot();
+			if (GravestoneCompass.read(current).isEmpty() || free < 0) {
+				return false;
+			}
+			inv.setItem(free, current);
 		}
 		inv.setItem(index, entry.stack().copy());
 		return true;

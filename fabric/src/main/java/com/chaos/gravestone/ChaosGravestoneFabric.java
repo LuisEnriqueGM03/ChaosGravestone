@@ -1,11 +1,15 @@
 package com.chaos.gravestone;
 
+import com.chaos.gravestone.compat.AccessoriesProvider;
+import com.chaos.gravestone.compat.TrinketsProvider;
 import com.chaos.gravestone.network.TotemSkullPayload;
+import com.chaos.gravestone.storage.ProviderRegistry;
 
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 
@@ -22,6 +26,15 @@ public class ChaosGravestoneFabric implements ModInitializer {
 		ModParticles.register((id, type) -> Registry.register(BuiltInRegistries.PARTICLE_TYPE, id, type));
 
 		ChaosGravestone.init();
+		// Mods de accesorios (las clases solo se cargan si el mod está). Pueden ir los dos: cada provider vacía
+		// la ranura al capturar, así que con la capa de compatibilidad de Accessories para Trinkets el segundo
+		// ya la encuentra vacía y nada se guarda dos veces.
+		if (FabricLoader.getInstance().isModLoaded("accessories")) {
+			ProviderRegistry.register(new AccessoriesProvider());
+		}
+		if (FabricLoader.getInstance().isModLoaded("trinkets")) {
+			ProviderRegistry.register(new TrinketsProvider());
+		}
 
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> GravestoneCompass.onRespawn(newPlayer));
 		ServerTickEvents.END_SERVER_TICK.register(GravestoneCompass::tick);

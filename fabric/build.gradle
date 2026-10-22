@@ -3,11 +3,41 @@ plugins {
 	id 'net.fabricmc.fabric-loom-remap'
 }
 
+repositories {
+	// Trinkets
+	maven {
+		url = 'https://maven.terraformersmc.com/releases'
+		content { includeGroup('dev.emi') }
+	}
+	// Cardinal Components (dependencia de Trinkets)
+	maven {
+		url = 'https://maven.ladysnake.org/releases'
+		content { includeGroupAndSubgroups('org.ladysnake') }
+	}
+	// Accessories y owo-lib
+	maven {
+		url = 'https://maven.wispforest.io/releases'
+		content { includeGroupAndSubgroups('io.wispforest') }
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${minecraft_version}"
 	mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${loader_version}"
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+
+	// Compatibilidad opcional: solo para compilar, el mod no los exige.
+	modCompileOnly("dev.emi:trinkets:${trinkets_version}") { exclude group: 'net.fabricmc.fabric-api' }
+	modCompileOnly("io.wispforest:accessories-fabric:${accessories_version}") { exclude group: 'net.fabricmc.fabric-api' }
+	// Para probarlos en desarrollo: ./gradlew :fabric:runSelftest -Pcompat=trinkets (accessories, both).
+	def compat = project.findProperty('compat')
+	if (compat in ['trinkets', 'both']) {
+		modLocalRuntime("dev.emi:trinkets:${trinkets_version}") { exclude group: 'net.fabricmc.fabric-api' }
+	}
+	if (compat in ['accessories', 'both']) {
+		modLocalRuntime("io.wispforest:accessories-fabric:${accessories_version}") { exclude group: 'net.fabricmc.fabric-api' }
+	}
 }
 
 loom {

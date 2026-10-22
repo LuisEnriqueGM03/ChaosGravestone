@@ -1,9 +1,7 @@
 package com.chaos.gravestone;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,6 +9,7 @@ import com.chaos.gravestone.block.GravestoneBlock;
 import com.chaos.gravestone.network.TotemSkullPayload;
 
 import com.chaos.gravestone.platform.Services;
+import com.chaos.gravestone.storage.PendingCompassHolder;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,6 +27,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -44,17 +44,21 @@ public final class GravestoneCompass {
 
 	public record GraveRef(UUID id, GlobalPos pos) {}
 
-	/** Brújulas pendientes de entregar al reaparecer (en memoria); se guardan tal cual (normal o de ender). */
-	private static final Map<UUID, List<ItemStack>> PENDING = new HashMap<>();
-
 	private GravestoneCompass() {}
 
-	/** Al reaparecer: entrega las brújulas pendientes. Lo llama el evento de cada cargador. */
+	/**
+	 * Al reaparecer: entrega las brújulas pendientes. Lo llama el evento de cada cargador.
+	 * Las pendientes se guardan en los datos del jugador (ver ServerPlayerMixin), así que
+	 * sobreviven a salir del mundo o reiniciar el servidor desde la pantalla de muerte.
+	 */
 	public static void onRespawn(ServerPlayer player) {
-		List<ItemStack> stacks = PENDING.remove(player.getUUID());
-		if (stacks != null) {
-			stacks.forEach(stack -> give(player, stack));
+		List<ItemStack> pending = pending(player);
+		if (pending.isEmpty()) {
+			return;
 		}
+		List<ItemStack> stacks = new ArrayList<>(pending);
+		pending.clear();
+		stacks.forEach(stack -> give(player, stack));
 	}
 
 	public static ItemStack create(GraveRef ref) {
@@ -64,20 +68,46 @@ public final class GravestoneCompass {
 		return stack;
 	}
 
+	/**
+	 * Al inventario; si está lleno, al suelo a sus pies. Se crea la entidad a mano porque
+	 * {@code player.drop} haría desaparecer la brújula (ver {@link #vanishOnToss}).
+	 */
 	public static void give(ServerPlayer player, ItemStack stack) {
 		if (!player.getInventory().add(stack) && !stack.isEmpty()) {
-			player.drop(stack, false);
+			ItemEntity item = new ItemEntity(player.level(), player.getX(), player.getY(), player.getZ(), stack);
+			item.setNoPickUpDelay();
+			player.level().addFreshEntity(item);
 		}
 	}
 
 	/** Brújula nueva para una lápida recién creada. */
-	public static void addPending(UUID player, GraveRef ref) {
+	public static void addPending(ServerPlayer player, GraveRef ref) {
 		addPending(player, create(ref));
 	}
 
 	/** Brújula que llevaba el jugador al morir; se le devuelve igual al reaparecer. */
-	public static void addPending(UUID player, ItemStack stack) {
-		PENDING.computeIfAbsent(player, k -> new ArrayList<>()).add(stack);
+	public static void addPending(ServerPlayer player, ItemStack stack) {
+		pending(player).add(stack);
+	}
+
+	private static List<ItemStack> pending(ServerPlayer player) {
+		return ((PendingCompassHolder) player).chaosgravestone$pendingCompasses();
+	}
+
+	/**
+	 * Al tirar una brújula vinculada (Q, arrastrarla fuera del inventario...) se desvanece en
+	 * vez de caer: solo existe para su dueño. {@code true} si se ha hecho desaparecer.
+	 */
+	public static boolean vanishOnToss(ServerPlayer player, ItemStack stack) {
+		if (read(stack).isEmpty()) {
+			return false;
+		}
+		ServerLevel level = player.serverLevel();
+		level.sendParticles(ParticleTypes.SMOKE, player.getX(), player.getEyeY() - 0.3, player.getZ(),
+				8, 0.15, 0.15, 0.15, 0.01);
+		level.playSound(null, player.blockPosition(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 1.0F, 1.0F);
+		player.displayClientMessage(Component.translatable("message.chaosgravestone.compass_vanished"), true);
+		return true;
 	}
 
 	/** Lee la lápida a la que apunta esta brújula (normal o de ender), si lo es. */

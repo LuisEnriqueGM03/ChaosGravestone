@@ -4,6 +4,9 @@ import com.chaos.gravestone.ModBlocks;
 import com.chaos.gravestone.ModParticles;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.client.event.EntityRenderersEvent;
 import net.minecraftforge.client.event.RegisterParticleProvidersEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -29,6 +32,13 @@ public final class ChaosGravestoneForgeClient {
 		if (SelfTest.enabled()) {
 			MinecraftForge.EVENT_BUS.addListener((TickEvent.ClientTickEvent.Post event) ->
 					SelfTest.tick(Minecraft.getInstance()));
+			// Simula un mod de revivir: cancela la muerte antes que nadie y deja al jugador con vida.
+			MinecraftForge.EVENT_BUS.addListener(EventPriority.HIGHEST, false, LivingDeathEvent.class, event -> {
+				if (LogicTest.cancelNextDeath && event.getEntity() instanceof ServerPlayer player) {
+					player.setHealth(1.0F);
+					event.setCanceled(true);
+				}
+			});
 		}
 	}
 }

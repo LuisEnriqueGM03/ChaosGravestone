@@ -18,7 +18,7 @@ public final class ChaosGravestone {
 	public static void init() {
 		GravestoneConfig.load();
 		ProviderRegistry.register(new VanillaProvider());
-		// Pendiente: providers de Accessories, Trinkets/Curios, Travelers Backpack y Cosmetic Armor,
-		// cada uno registrado solo si Services.PLATFORM.isModLoaded(...).
+		// Los providers de mods de accesorios los registra cada cargador (Fabric: Accessories o Trinkets).
+		// Pendiente: Curios (NeoForge/Forge), Travelers Backpack y Cosmetic Armor.
 	}
 }

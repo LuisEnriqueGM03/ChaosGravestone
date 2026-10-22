@@ -58,6 +58,7 @@ public final class SelfTest {
 
 	private static int ticks = -1;
 	private static BlockPos breakPos;
+	private static BlockPos origin;
 	private static BlockPos farPos;
 	private static UUID farGraveId;
 	private static UUID breakGraveId;
@@ -172,7 +173,14 @@ public final class SelfTest {
 		if (ticks == graveStart + 165) {
 			shot(mc, "creative_tab_b");
 		}
-		if (ticks == graveStart + 175) {
+		// Lógica: muertes y reapariciones reales (brújulas, XP, accesorios, muerte cancelada, Wither).
+		if (ticks == graveStart + 170) {
+			mc.setScreen(null);
+			MinecraftServer server = mc.getSingleplayerServer();
+			UUID id = mc.player.getUUID();
+			server.execute(() -> LogicTest.run(server.getPlayerList().getPlayer(id), origin, farGraveId, farPos));
+		}
+		if (ticks == graveStart + 200) {
 			ChaosGravestone.LOGGER.info("[selftest] terminado ({})", Services.PLATFORM.name());
 			mc.stop();
 		}
@@ -246,11 +254,19 @@ public final class SelfTest {
 			if (player == null) {
 				return;
 			}
-			ServerLevel level = player.serverLevel();
+			// Siempre desde el mismo sitio y con vida: el mundo guarda dónde acabó la prueba anterior.
+			if (player.isDeadOrDying()) {
+				player = LogicTest.respawn(player);
+			}
+			player.setHealth(player.getMaxHealth());
+			ServerLevel level = server.overworld();
+			BlockPos spawn = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, level.getSharedSpawnPos());
+			player.teleportTo(level, spawn.getX() + 0.5, spawn.getY(), spawn.getZ() + 0.5, 0.0F, 0.0F);
 			level.setDayTime(6000);
 			level.setWeatherParameters(6000, 0, false, false);
 
 			BlockPos feet = player.blockPosition();
+			origin = feet;
 			BlockPos far = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, feet.north(30));
 			UUID farId = placeGrave(level, player, far, Direction.SOUTH, GravestoneVariant.CLASSIC);
 			farGraveId = farId;
@@ -295,7 +311,7 @@ public final class SelfTest {
 				new StoredEntry("vanilla", "slot#0", new ItemStack(Items.DIAMOND_SWORD)),
 				new StoredEntry("vanilla", "slot#1", new ItemStack(Items.TORCH, 32)),
 				new StoredEntry("vanilla", "slot#39", new ItemStack(Items.IRON_HELMET))),
-				Component.translatable("death.attack.mob", player.getDisplayName(), Component.literal("Zombie")));
+				Component.translatable("death.attack.mob", player.getDisplayName(), Component.literal("Zombie")), 0);
 		return grave.getGraveId();
 	}
 

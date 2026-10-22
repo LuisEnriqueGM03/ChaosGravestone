@@ -23,13 +23,16 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Containers;
+import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public class GravestoneBlockEntity extends BlockEntity {
 
@@ -46,13 +49,15 @@ public class GravestoneBlockEntity extends BlockEntity {
 	private Component deathCause;
 	/** Número de objetos; en el cliente sustituye a {@link #entries}, que no se sincroniza. */
 	private int itemCount;
+	/** Puntos de experiencia guardados; se devuelven al abrirla o caen como orbes si se rompe. */
+	private int storedXp;
 	private final List<StoredEntry> entries = new ArrayList<>();
 
 	public GravestoneBlockEntity(BlockPos pos, BlockState state) {
 		super(ModBlocks.GRAVESTONE_ENTITY, pos, state);
 	}
 
-	public void init(ServerPlayer player, List<StoredEntry> contents, Component cause) {
+	public void init(ServerPlayer player, List<StoredEntry> contents, Component cause, int xp) {
 		this.owner = player.getUUID();
 		this.ownerName = player.getGameProfile().getName();
 		this.deathTime = player.level().getGameTime();
@@ -62,6 +67,7 @@ public class GravestoneBlockEntity extends BlockEntity {
 		this.entries.clear();
 		this.entries.addAll(contents);
 		this.itemCount = contents.size();
+		this.storedXp = xp;
 		setChanged();
 		if (level != null) {
 			level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
@@ -103,6 +109,10 @@ public class GravestoneBlockEntity extends BlockEntity {
 		return itemCount;
 	}
 
+	public int getStoredXp() {
+		return storedXp;
+	}
+
 	public boolean canOpen(Player player) {
 		GravestoneConfig cfg = GravestoneConfig.get();
 		if (!cfg.protectedByOwner || owner == null || owner.equals(player.getUUID())) {
@@ -118,6 +128,8 @@ public class GravestoneBlockEntity extends BlockEntity {
 
 	/** Devuelve cada objeto a su ranura; lo que no cabe va al inventario y, si no, al suelo. */
 	public void restoreTo(ServerPlayer player) {
+		// Antes de nada: al reaparecer su brújula pudo ocupar la ranura de alguno de los objetos.
+		GravestoneCompass.removeFrom(player, graveId);
 		for (StoredEntry entry : entries) {
 			SlotProvider provider = ProviderRegistry.get(entry.providerId());
 			boolean placed = false;
@@ -134,7 +146,10 @@ public class GravestoneBlockEntity extends BlockEntity {
 		}
 		entries.clear();
 		itemCount = 0;
-		GravestoneCompass.removeFrom(player, graveId);
+		if (storedXp > 0) {
+			player.giveExperiencePoints(storedXp);
+			storedXp = 0;
+		}
 		setChanged();
 	}
 
@@ -149,6 +164,10 @@ public class GravestoneBlockEntity extends BlockEntity {
 		}
 		entries.clear();
 		itemCount = 0;
+		if (storedXp > 0 && level instanceof ServerLevel serverLevel) {
+			ExperienceOrb.award(serverLevel, Vec3.atCenterOf(worldPosition), storedXp);
+			storedXp = 0;
+		}
 	}
 
 	private static void giveOrDrop(ServerPlayer player, ItemStack stack) {
@@ -177,6 +196,7 @@ public class GravestoneBlockEntity extends BlockEntity {
 		saveDisplay(tag, registries);
 		tag.putUUID("graveId", graveId);
 		tag.putLong("deathTime", deathTime);
+		tag.putInt("storedXp", storedXp);
 		ListTag list = new ListTag();
 		for (StoredEntry entry : entries) {
 			list.add(entry.save(registries));
@@ -198,6 +218,7 @@ public class GravestoneBlockEntity extends BlockEntity {
 		}
 		owner = tag.hasUUID("owner") ? tag.getUUID("owner") : null;
 		deathTime = tag.getLong("deathTime");
+		storedXp = tag.getInt("storedXp");
 		entries.clear();
 		for (Tag t : tag.getList("entries", Tag.TAG_COMPOUND)) {
 			StoredEntry entry = StoredEntry.load((CompoundTag) t, registries);
