@@ -17,6 +17,7 @@ if (-not $token) { $token = [Environment]::GetEnvironmentVariable("CURSEFORGE_TO
 if (-not $token) { throw "Falta CURSEFORGE_TOKEN (setx CURSEFORGE_TOKEN <token>)" }
 
 $version = ((Get-Content "$root\gradle.properties") | Where-Object { $_ -match '^version=' }) -replace '^version=', ''
+$mcVersion = ((Get-Content "$root\gradle.properties") | Where-Object { $_ -match '^minecraft_version=' }) -replace '^minecraft_version=', ''
 $api = "https://minecraft.curseforge.com/api"
 $all = Invoke-RestMethod -Uri "$api/game/versions" -Headers @{ "X-Api-Token" = $token }
 
@@ -35,7 +36,7 @@ foreach ($name in $selected) {
 	if (-not $jar) { throw "No existe $name/build/libs/chaosgravestone-$name-$version.jar; ejecuta gradlew build" }
 
 	# Ids de CurseForge para versión de juego, cargador, Java y entorno.
-	$ids = foreach ($wanted in "1.21.1", $cfg.GameVersion, "Java 21", "Client", "Server") {
+	$ids = foreach ($wanted in $mcVersion, $cfg.GameVersion, "Java 21", "Client", "Server") {
 		$match = $all | Where-Object { $_.name -eq $wanted } | Select-Object -First 1
 		if (-not $match) { throw "CurseForge no tiene la versión '$wanted'" }
 		Write-Host "  $wanted -> $($match.id)"
@@ -46,7 +47,7 @@ foreach ($name in $selected) {
 		# ReadAllText: en PowerShell 5.1, Get-Content -Raw añade propiedades que ConvertTo-Json serializa.
 		changelog     = [IO.File]::ReadAllText("$root\tools\changelog.md", [Text.Encoding]::UTF8)
 		changelogType = "markdown"
-		displayName   = "Chaos Gravestone - $version"
+		displayName   = "Chaos Gravestone $version - $($cfg.GameVersion) $mcVersion"
 		gameVersions  = @($ids)
 		releaseType   = $ReleaseType
 	}
@@ -56,7 +57,7 @@ foreach ($name in $selected) {
 	$metaFile = Join-Path $env:TEMP "chaosgravestone-cf-metadata-$name.json"
 	[IO.File]::WriteAllText($metaFile, $metadata, (New-Object Text.UTF8Encoding $false))
 
-	Write-Host "Proyecto $ProjectId | $($jar.Name) | Chaos Gravestone - $version | $ReleaseType"
+	Write-Host "Proyecto $ProjectId | $($jar.Name) | Chaos Gravestone $version - $($cfg.GameVersion) $mcVersion | $ReleaseType"
 	if ($DryRun) {
 		Write-Host "DryRun: no se sube nada."
 		Remove-Item $metaFile

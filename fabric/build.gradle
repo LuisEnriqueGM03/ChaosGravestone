@@ -50,7 +50,7 @@ dependencies {
 	modCompileOnly "org.ladysnake.cardinal-components-api:cardinal-components-base:6.1.1"
 	modCompileOnly "org.ladysnake.cardinal-components-api:cardinal-components-entity:6.1.1"
 
-	// Para probarlos en desarrollo: ./gradlew :fabric:runSelftest -Pcompat=trinkets,accessories,backpack,cosmetic
+	// Para probarlos en desarrollo: ./gradlew :fabric:runSelftest -Pcompat=trinkets,accessories,backpack,cosmetic,hats
 	// ("both" = trinkets,accessories).
 	def compat = ((project.findProperty('compat') ?: '') as String).replace('both', 'trinkets,accessories').split(',') as List
 	if ('trinkets' in compat) {
@@ -68,6 +68,11 @@ dependencies {
 	if ('cosmetic' in compat) {
 		modLocalRuntime "maven.modrinth:cosmetic-armor-reworked-forked:${cosmeticarmor_fabric}"
 		modLocalRuntime("dev.architectury:architectury-fabric:13.0.8") { exclude group: 'net.fabricmc.fabric-api' }
+	}
+	// Solo para probar (usa Trinkets o Accessories para su ranura): Simple Hats.
+	if ('hats' in compat) {
+		modLocalRuntime "maven.modrinth:simple-hats:CBwzDCWX"
+		modLocalRuntime("io.wispforest:owo-lib:0.12.15.4+1.21") { exclude group: 'net.fabricmc.fabric-api' }
 	}
 }
 
