@@ -44,11 +44,35 @@ repositories {
 	maven fg.forgeMaven
 	maven fg.minecraftLibsMaven
 	mavenCentral()
+	// Traveler's Backpack y Cosmetic Armor Reworked Forked
+	maven {
+		url = 'https://api.modrinth.com/maven'
+		content { includeGroup('maven.modrinth') }
+	}
+	// Cosmetic Armor Reworked: solo publica en las releases de GitHub
+	ivy {
+		url = 'https://github.com/zlainsama/CosmeticArmorReworked/releases/download/'
+		patternLayout { artifact '[revision]/[module]-[revision].[ext]' }
+		metadataSources { artifact() }
+		content { includeGroup('zlainsama') }
+	}
 }
 
 dependencies {
 	implementation minecraft.dependency("net.minecraftforge:forge:${mod.minecraft_version}-${forge_version}")
 	compileOnly 'org.jetbrains:annotations:24.1.0'
+
+	// Compatibilidad opcional: solo para compilar, el mod no los exige.
+	compileOnly "maven.modrinth:travelersbackpack:${mod.travelersbackpack_forge}"
+	compileOnly "zlainsama:cosmeticarmorreworked:${mod.cosmeticarmor_forge}"
+	// Para probarlos en desarrollo: ./gradlew -p forge runClient -Pselftest -Pcompat=backpack,cosmetic
+	def compat = ((project.findProperty('compat') ?: '') as String).split(',') as List
+	if ('backpack' in compat) {
+		runtimeOnly "maven.modrinth:travelersbackpack:${mod.travelersbackpack_forge}"
+	}
+	if ('cosmetic' in compat) {
+		runtimeOnly "zlainsama:cosmeticarmorreworked:${mod.cosmeticarmor_forge}"
+	}
 }
 
 tasks.withType(JavaCompile).configureEach {

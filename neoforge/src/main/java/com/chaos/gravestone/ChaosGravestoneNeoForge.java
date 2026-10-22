@@ -2,7 +2,9 @@ package com.chaos.gravestone;
 
 import com.chaos.gravestone.client.ChaosGravestoneClient;
 import com.chaos.gravestone.client.ChaosGravestoneNeoForgeClient;
+import com.chaos.gravestone.compat.CosmeticArmorProvider;
 import com.chaos.gravestone.compat.CuriosProvider;
+import com.chaos.gravestone.compat.TravelersBackpackProvider;
 import com.chaos.gravestone.network.TotemSkullPayload;
 import com.chaos.gravestone.storage.ProviderRegistry;
 
@@ -26,9 +28,15 @@ public class ChaosGravestoneNeoForge {
 
 	public ChaosGravestoneNeoForge(IEventBus modBus, Dist dist) {
 		ChaosGravestone.init();
-		// Curios (opcional): la clase solo se carga si el mod está.
+		// Mods de ranuras (opcionales): cada clase solo se carga si su mod está.
 		if (ModList.get().isLoaded("curios")) {
 			ProviderRegistry.register(new CuriosProvider());
+		}
+		if (ModList.get().isLoaded("travelersbackpack")) {
+			ProviderRegistry.register(new TravelersBackpackProvider());
+		}
+		if (ModList.get().isLoaded("cosmeticarmorreworked")) {
+			ProviderRegistry.register(new CosmeticArmorProvider());
 		}
 
 		modBus.addListener(ChaosGravestoneNeoForge::register);

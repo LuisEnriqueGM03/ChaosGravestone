@@ -1,6 +1,9 @@
 package com.chaos.gravestone;
 
 import com.chaos.gravestone.client.ChaosGravestoneForgeClient;
+import com.chaos.gravestone.compat.CosmeticArmorProvider;
+import com.chaos.gravestone.compat.TravelersBackpackProvider;
+import com.chaos.gravestone.storage.ProviderRegistry;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
@@ -11,6 +14,7 @@ import net.minecraftforge.event.entity.living.LivingDeathEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
@@ -23,6 +27,13 @@ public class ChaosGravestoneForge {
 	public ChaosGravestoneForge(FMLJavaModLoadingContext context) {
 		IEventBus modBus = context.getModEventBus();
 		ChaosGravestone.init();
+		// Mods de ranuras (opcionales): cada clase solo se carga si su mod está. Curios no existe en Forge 1.21.1.
+		if (ModList.get().isLoaded("travelersbackpack")) {
+			ProviderRegistry.register(new TravelersBackpackProvider());
+		}
+		if (ModList.get().isLoaded("cosmeticarmorreworked")) {
+			ProviderRegistry.register(new CosmeticArmorProvider());
+		}
 		ForgeNetwork.register();
 
 		modBus.addListener(ChaosGravestoneForge::register);

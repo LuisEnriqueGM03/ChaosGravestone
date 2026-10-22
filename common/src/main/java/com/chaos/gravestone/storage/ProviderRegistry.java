@@ -1,6 +1,8 @@
 package com.chaos.gravestone.storage;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,10 @@ public final class ProviderRegistry {
 	@Nullable
 	public static SlotProvider get(String id) {
 		return PROVIDERS.get(id);
+	}
+
+	public static Collection<SlotProvider> all() {
+		return Collections.unmodifiableCollection(PROVIDERS.values());
 	}
 
 	/** Captura todo, cada provider aislado para que un fallo de un mod no pierda el resto. */

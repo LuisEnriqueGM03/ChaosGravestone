@@ -9,14 +9,35 @@ repositories {
 		url = 'https://maven.theillusivec4.top/'
 		content { includeGroup('top.theillusivec4.curios') }
 	}
+	// Traveler's Backpack y Cosmetic Armor Reworked Forked
+	maven {
+		url = 'https://api.modrinth.com/maven'
+		content { includeGroup('maven.modrinth') }
+	}
+	// Cosmetic Armor Reworked: solo publica en las releases de GitHub
+	ivy {
+		url = 'https://github.com/zlainsama/CosmeticArmorReworked/releases/download/'
+		patternLayout { artifact '[revision]/[module]-[revision].[ext]' }
+		metadataSources { artifact() }
+		content { includeGroup('zlainsama') }
+	}
 }
 
 dependencies {
 	// Compatibilidad opcional: solo la API para compilar, el mod no la exige.
 	compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
-	// Para probarlo en desarrollo: ./gradlew :neoforge:runSelftest -Pcompat=curios
-	if (project.findProperty('compat') == 'curios') {
+	compileOnly "maven.modrinth:travelersbackpack:${travelersbackpack_neoforge}"
+	compileOnly "zlainsama:cosmeticarmorreworked:${cosmeticarmor_neoforge}"
+	// Para probarlos en desarrollo: ./gradlew :neoforge:runSelftest -Pcompat=curios,backpack,cosmetic
+	def compat = ((project.findProperty('compat') ?: '') as String).split(',') as List
+	if ('curios' in compat) {
 		runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+	}
+	if ('backpack' in compat) {
+		runtimeOnly "maven.modrinth:travelersbackpack:${travelersbackpack_neoforge}"
+	}
+	if ('cosmetic' in compat) {
+		runtimeOnly "zlainsama:cosmeticarmorreworked:${cosmeticarmor_neoforge}"
 	}
 }
 

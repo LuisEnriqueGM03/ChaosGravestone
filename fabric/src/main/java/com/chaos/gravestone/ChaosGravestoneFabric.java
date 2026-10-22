@@ -1,6 +1,8 @@
 package com.chaos.gravestone;
 
 import com.chaos.gravestone.compat.AccessoriesProvider;
+import com.chaos.gravestone.compat.CosmeticArmorProvider;
+import com.chaos.gravestone.compat.TravelersBackpackProvider;
 import com.chaos.gravestone.compat.TrinketsProvider;
 import com.chaos.gravestone.network.TotemSkullPayload;
 import com.chaos.gravestone.storage.ProviderRegistry;
@@ -34,6 +36,14 @@ public class ChaosGravestoneFabric implements ModInitializer {
 		}
 		if (FabricLoader.getInstance().isModLoaded("trinkets")) {
 			ProviderRegistry.register(new TrinketsProvider());
+		}
+		if (FabricLoader.getInstance().isModLoaded("travelersbackpack")) {
+			ProviderRegistry.register(new TravelersBackpackProvider());
+		}
+		// En Fabric, Cosmetic Armor Reworked es el fork (misma API); "Cosmetic Armor: Revitalized" usa Trinkets.
+		if (FabricLoader.getInstance().isModLoaded("cosmeticarmorreworkedforked")
+				|| FabricLoader.getInstance().isModLoaded("cosmeticarmorreworked")) {
+			ProviderRegistry.register(new CosmeticArmorProvider());
 		}
 
 		ServerPlayerEvents.AFTER_RESPAWN.register((oldPlayer, newPlayer, alive) -> GravestoneCompass.onRespawn(newPlayer));
