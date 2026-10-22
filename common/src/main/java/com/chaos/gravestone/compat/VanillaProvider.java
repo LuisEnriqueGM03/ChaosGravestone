@@ -38,7 +38,7 @@ public final class VanillaProvider implements SlotProvider {
 			var compass = GravestoneCompass.read(stack);
 			if (compass.isPresent()) {
 				// Se devuelve la misma (conserva la de ender); las vanilla antiguas pasan a la del mod.
-				GravestoneCompass.addPending(player.getUUID(),
+				GravestoneCompass.addPending(player,
 						stack.is(Items.COMPASS) ? GravestoneCompass.create(compass.get()) : stack);
 				continue;
 			}

@@ -35,5 +35,6 @@
 	"message.chaosgravestone.created": "Tu lápida está en %s, %s, %s (%s)",
 	"message.chaosgravestone.not_yours": "Esta lápida pertenece a %s",
 	"message.chaosgravestone.unlinked": "Esta brújula no está vinculada a ninguna lápida",
-	"message.chaosgravestone.grave_gone": "Esa lápida ya no existe"
+	"message.chaosgravestone.grave_gone": "Esa lápida ya no existe",
+	"message.chaosgravestone.compass_vanished": "La brújula se desvanece"
 }

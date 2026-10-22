@@ -24,9 +24,16 @@ public final class GravestoneManager {
 
 	private static final int SEARCH_RADIUS = 4;
 
+	/**
+	 * {@code true} en NeoForge y Forge: allí la lápida se crea en LivingDeathEvent (prioridad mínima,
+	 * solo si nadie la canceló) y no en ServerPlayerMixin, para no vaciar el inventario de un jugador
+	 * que otro mod salva de morir.
+	 */
+	public static boolean loaderHandlesDeath = false;
+
 	private GravestoneManager() {}
 
-	/** Llamado al inicio de {@code ServerPlayer#die}, antes de que se suelte ningún objeto. */
+	/** Llamado al inicio de la muerte (mixin o evento del cargador), antes de que se suelte ningún objeto. */
 	public static void onPlayerDeath(ServerPlayer player) {
 		ServerLevel level = player.serverLevel();
 		if (player.isSpectator() || level.getGameRules().getBoolean(GameRules.RULE_KEEPINVENTORY)) {
@@ -51,7 +58,7 @@ public final class GravestoneManager {
 		level.setBlockAndUpdate(spot, state);
 		if (level.getBlockEntity(spot) instanceof GravestoneBlockEntity grave) {
 			grave.init(player, contents, cause);
-			GravestoneCompass.addPending(player.getUUID(),
+			GravestoneCompass.addPending(player,
 					new GravestoneCompass.GraveRef(grave.getGraveId(), GlobalPos.of(level.dimension(), spot)));
 		}
 

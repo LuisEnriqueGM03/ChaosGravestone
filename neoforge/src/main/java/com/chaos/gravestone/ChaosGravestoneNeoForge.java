@@ -7,9 +7,11 @@ import com.chaos.gravestone.network.TotemSkullPayload;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -25,6 +27,13 @@ public class ChaosGravestoneNeoForge {
 		modBus.addListener(ChaosGravestoneNeoForge::register);
 		modBus.addListener(ChaosGravestoneNeoForge::registerPayloads);
 
+		// La lápida se crea aquí, después de que cualquier otro mod haya podido cancelar la muerte.
+		GravestoneManager.loaderHandlesDeath = true;
+		NeoForge.EVENT_BUS.addListener(EventPriority.LOWEST, false, LivingDeathEvent.class, event -> {
+			if (event.getEntity() instanceof ServerPlayer player) {
+				GravestoneManager.onPlayerDeath(player);
+			}
+		});
 		NeoForge.EVENT_BUS.addListener((PlayerEvent.PlayerRespawnEvent event) -> {
 			if (event.getEntity() instanceof ServerPlayer player) {
 				GravestoneCompass.onRespawn(player);
