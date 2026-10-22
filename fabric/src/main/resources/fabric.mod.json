@@ -4,7 +4,7 @@
 	"version": "${version}",
 	"name": "Chaos Gravestone",
 	"description": "Al morir queda una lápida protegida con todo tu inventario; al abrirla cada objeto vuelve a su ranura. Incluye brújula de calavera que guía hasta la tumba y versión de ender que teletransporta.",
-	"authors": ["Luis Enrique Gil Mayser"],
+	"authors": ["${mod_author}"],
 	"license": "MIT",
 	"environment": "*",
 	"entrypoints": {

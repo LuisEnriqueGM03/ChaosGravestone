@@ -16,6 +16,15 @@ pluginManagement {
 rootProject.name = 'chaosgravestone'
 
 // common: código compartido (solo Minecraft vanilla). fabric / neoforge: arranque y eventos de cada cargador.
+// Se compila el cargador de la rama (default_loader) o el que se pida con -Ploader=fabric|neoforge|all.
+// Forge 1.21.1 es un build aparte: ./gradlew -p forge build
 include('common')
-include('fabric')
-include('neoforge')
+def selectedLoader = providers.gradleProperty('loader')
+		.orElse(providers.gradleProperty('default_loader').orElse('fabric')).get()
+if (selectedLoader == 'all') {
+	include('fabric', 'neoforge')
+} else if (selectedLoader in ['fabric', 'neoforge']) {
+	include(selectedLoader)
+} else {
+	throw new GradleException('loader debe ser fabric, neoforge o all')
+}
