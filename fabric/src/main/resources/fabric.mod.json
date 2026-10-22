@@ -11,7 +11,7 @@
 		"main": ["com.chaos.gravestone.ChaosGravestoneFabric"],
 		"client": ["com.chaos.gravestone.client.ChaosGravestoneFabricClient"]
 	},
-	"mixins": ["chaosgravestone.mixins.json"],
+	"mixins": ["chaosgravestone.mixins.json", "chaosgravestone.fabric.mixins.json"],
 	"depends": {
 		"fabricloader": ">=0.16.0",
 		"minecraft": "~1.21.1",
@@ -22,6 +22,7 @@
 		"accessories": "*",
 		"trinkets": "*",
 		"travelersbackpack": "*",
-		"cosmeticarmorreworked": "*"
+		"cosmeticarmorreworked": "*",
+		"cosmeticarmorreworkedforked": "*"
 	}
 }

@@ -18,7 +18,7 @@ public final class ChaosGravestone {
 	public static void init() {
 		GravestoneConfig.load();
 		ProviderRegistry.register(new VanillaProvider());
-		// Los providers de mods de accesorios los registra cada cargador (Fabric: Accessories y Trinkets;
-		// NeoForge: Curios). Pendiente: Travelers Backpack y Cosmetic Armor.
+		// Los providers de mods de ranuras los registra cada cargador: Fabric (Accessories, Trinkets),
+		// NeoForge (Curios) y en los tres Traveler's Backpack y Cosmetic Armor Reworked.
 	}
 }

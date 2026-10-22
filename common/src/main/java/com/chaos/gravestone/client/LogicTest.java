@@ -13,7 +13,10 @@ import com.chaos.gravestone.ModBlocks;
 import com.chaos.gravestone.block.GravestoneBlockEntity;
 import com.chaos.gravestone.config.GravestoneConfig;
 import com.chaos.gravestone.platform.Services;
+import com.chaos.gravestone.storage.FixedSlotsProvider;
 import com.chaos.gravestone.storage.PendingCompassHolder;
+import com.chaos.gravestone.storage.ProviderRegistry;
+import com.chaos.gravestone.storage.SlotProvider;
 import com.mojang.authlib.GameProfile;
 
 import net.minecraft.core.BlockPos;
@@ -27,6 +30,8 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ExperienceOrb;
 import net.minecraft.world.entity.boss.wither.WitherBoss;
 import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -53,6 +58,54 @@ public final class LogicTest {
 
 		/** Vacía todas las ranuras de accesorio. */
 		void clear(ServerPlayer player);
+
+		/** Objeto de prueba; null = uno genérico (diamante, esmeralda...). */
+		@Nullable
+		default Item testItem() {
+			return null;
+		}
+	}
+
+	/** Hook genérico para los mods de ranuras fijas (Traveler's Backpack, Cosmetic Armor), en cualquier cargador. */
+	private record FixedHook(FixedSlotsProvider provider) implements CompatHook {
+
+		@Override
+		public String name() {
+			return provider.id();
+		}
+
+		@Override
+		@Nullable
+		public String equip(ServerPlayer player, ItemStack stack) {
+			if (provider.slotCount(player) == 0) {
+				return null;
+			}
+			provider.setSlot(player, 0, stack);
+			return "slot#0";
+		}
+
+		@Override
+		public ItemStack get(ServerPlayer player, String slot) {
+			return provider.slotCount(player) == 0 ? ItemStack.EMPTY : provider.slot(player, 0);
+		}
+
+		@Override
+		public void clear(ServerPlayer player) {
+			for (int i = 0; i < provider.slotCount(player); i++) {
+				provider.setSlot(player, i, ItemStack.EMPTY);
+			}
+		}
+
+		@Override
+		@Nullable
+		public Item testItem() {
+			if (provider.id().equals("travelersbackpack")) {
+				// La mochila tiene que ser una de verdad para poder ponérsela.
+				return BuiltInRegistries.ITEM.getOptional(ResourceLocation.fromNamespaceAndPath("travelersbackpack", "standard"))
+						.orElse(null);
+			}
+			return Items.DIAMOND_HELMET;
+		}
 	}
 
 	public static final List<CompatHook> compat = new ArrayList<>();
@@ -68,6 +121,13 @@ public final class LogicTest {
 	public static void run(ServerPlayer player, BlockPos origin, UUID farGraveId, BlockPos farPos) {
 		passed = 0;
 		failed = 0;
+		// Los mods de ranuras fijas se prueban solos, sin hook propio de cada cargador.
+		compat.removeIf(FixedHook.class::isInstance);
+		for (SlotProvider provider : ProviderRegistry.all()) {
+			if (provider instanceof FixedSlotsProvider fixed) {
+				compat.add(new FixedHook(fixed));
+			}
+		}
 		GravestoneConfig cfg = GravestoneConfig.get();
 		boolean oldStore = cfg.storeExperience;
 		int oldPercent = cfg.experiencePercent;
@@ -111,12 +171,17 @@ public final class LogicTest {
 				.transmuteCopy(ModBlocks.ENDER_GRAVE_COMPASS, 1);
 		p.getInventory().setItem(5, ender);
 		// Un objeto distinto en cada mod de accesorios.
-		Item[] accessoryItems = {Items.DIAMOND, Items.EMERALD};
+		Item[] generic = {Items.DIAMOND, Items.EMERALD, Items.GOLD_INGOT, Items.LAPIS_LAZULI};
+		Item[] accessoryItems = new Item[compat.size()];
 		List<String> compatSlots = new ArrayList<>();
+		List<ItemStack> equipped = new ArrayList<>();
 		for (int i = 0; i < compat.size(); i++) {
+			Item own = compat.get(i).testItem();
+			accessoryItems[i] = own != null ? own : generic[i % generic.length];
 			String slot = compat.get(i).equip(p, new ItemStack(accessoryItems[i]));
 			check("compat: hay ranura de " + compat.get(i).name(), slot != null);
 			compatSlots.add(slot);
+			equipped.add(slot == null ? ItemStack.EMPTY : compat.get(i).get(p, slot).copy());
 		}
 		p.giveExperienceLevels(30);
 		check("xp inicial nivel 30", p.experienceLevel == 30);
@@ -187,6 +252,8 @@ public final class LogicTest {
 				check("abrir: accesorio de " + compat.get(i).name() + " vuelve a su ranura " + slot + " [" + back
 						+ ", en inventario=" + p.getInventory().countItem(accessoryItems[i]) + "]",
 						back.is(accessoryItems[i]) && back.getCount() == 1);
+				check("abrir: accesorio de " + compat.get(i).name() + " idéntico (mismos componentes)",
+						ItemStack.isSameItemSameComponents(back, equipped.get(i)));
 			}
 		}
 
@@ -312,7 +379,18 @@ public final class LogicTest {
 
 	private static int orbXp(ServerLevel level, BlockPos pos) {
 		return level.getEntitiesOfClass(ExperienceOrb.class, new AABB(pos).inflate(6)).stream()
-				.mapToInt(ExperienceOrb::getValue).sum();
+				.mapToInt(orb -> orb.getValue() * orbCount(orb)).sum();
+	}
+
+	/** Orbes iguales se fusionan en uno con un contador privado ("count"); sin él la suma sale corta. */
+	private static int orbCount(ExperienceOrb orb) {
+		try {
+			java.lang.reflect.Field field = ExperienceOrb.class.getDeclaredField("count");
+			field.setAccessible(true);
+			return field.getInt(orb);
+		} catch (ReflectiveOperationException | RuntimeException e) {
+			return 1;
+		}
 	}
 
 	private static int items(ServerLevel level, BlockPos pos) {
