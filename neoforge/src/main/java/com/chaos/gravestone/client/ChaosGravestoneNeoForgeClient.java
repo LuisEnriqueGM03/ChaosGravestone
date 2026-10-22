@@ -6,6 +6,7 @@ import com.chaos.gravestone.ModParticles;
 import net.minecraft.client.Minecraft;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.EventPriority;
+import net.neoforged.fml.ModList;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -38,6 +39,9 @@ public final class ChaosGravestoneNeoForgeClient {
 					event.setCanceled(true);
 				}
 			});
+			if (ModList.get().isLoaded("curios")) {
+				LogicTest.compat.add(new SelfTestCompat.Curios());
+			}
 		}
 	}
 }

@@ -2,13 +2,16 @@ package com.chaos.gravestone;
 
 import com.chaos.gravestone.client.ChaosGravestoneClient;
 import com.chaos.gravestone.client.ChaosGravestoneNeoForgeClient;
+import com.chaos.gravestone.compat.CuriosProvider;
 import com.chaos.gravestone.network.TotemSkullPayload;
+import com.chaos.gravestone.storage.ProviderRegistry;
 
 import net.minecraft.core.registries.Registries;
 import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -23,6 +26,10 @@ public class ChaosGravestoneNeoForge {
 
 	public ChaosGravestoneNeoForge(IEventBus modBus, Dist dist) {
 		ChaosGravestone.init();
+		// Curios (opcional): la clase solo se carga si el mod está.
+		if (ModList.get().isLoaded("curios")) {
+			ProviderRegistry.register(new CuriosProvider());
+		}
 
 		modBus.addListener(ChaosGravestoneNeoForge::register);
 		modBus.addListener(ChaosGravestoneNeoForge::registerPayloads);

@@ -3,6 +3,23 @@ plugins {
 	id 'net.neoforged.moddev'
 }
 
+repositories {
+	// Curios
+	maven {
+		url = 'https://maven.theillusivec4.top/'
+		content { includeGroup('top.theillusivec4.curios') }
+	}
+}
+
+dependencies {
+	// Compatibilidad opcional: solo la API para compilar, el mod no la exige.
+	compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
+	// Para probarlo en desarrollo: ./gradlew :neoforge:runSelftest -Pcompat=curios
+	if (project.findProperty('compat') == 'curios') {
+		runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
+	}
+}
+
 neoForge {
 	version = neoforge_version
 	runs {
