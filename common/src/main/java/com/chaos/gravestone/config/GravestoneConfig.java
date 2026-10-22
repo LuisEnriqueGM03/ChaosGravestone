@@ -32,7 +32,7 @@ public final class GravestoneConfig {
 	/** Guardar la experiencia en la lápida en vez de soltar orbes al morir. */
 	public boolean storeExperience = true;
 	/** Porcentaje (0-100) de la experiencia total que se guarda; el resto se pierde. */
-	public int experiencePercent = 75;
+	public int experiencePercent = 100;
 
 	public static GravestoneConfig get() {
 		return instance;

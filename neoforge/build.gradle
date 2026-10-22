@@ -28,7 +28,7 @@ dependencies {
 	compileOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}:api"
 	compileOnly "maven.modrinth:travelersbackpack:${travelersbackpack_neoforge}"
 	compileOnly "zlainsama:cosmeticarmorreworked:${cosmeticarmor_neoforge}"
-	// Para probarlos en desarrollo: ./gradlew :neoforge:runSelftest -Pcompat=curios,backpack,cosmetic
+	// Para probarlos en desarrollo: ./gradlew :neoforge:runSelftest -Pcompat=curios,backpack,cosmetic,sophisticated,hats
 	def compat = ((project.findProperty('compat') ?: '') as String).split(',') as List
 	if ('curios' in compat) {
 		runtimeOnly "top.theillusivec4.curios:curios-neoforge:${curios_version}"
@@ -38,6 +38,15 @@ dependencies {
 	}
 	if ('cosmetic' in compat) {
 		runtimeOnly "zlainsama:cosmeticarmorreworked:${cosmeticarmor_neoforge}"
+	}
+	// Solo para probar (usan Curios para su ranura): Sophisticated Backpacks y Simple Hats.
+	if ('sophisticated' in compat) {
+		runtimeOnly "maven.modrinth:sophisticated-backpacks:eg9lPtG4"
+		runtimeOnly "maven.modrinth:sophisticated-core:gtPF4VTh"
+	}
+	if ('hats' in compat) {
+		runtimeOnly "maven.modrinth:simple-hats:t7zbSooi"
+		runtimeOnly "maven.modrinth:owo-lib:wbdHEItB"
 	}
 }
 
